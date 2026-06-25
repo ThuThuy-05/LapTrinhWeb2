@@ -66,15 +66,19 @@ public class PaymentServiceImpl implements PaymentService {
 
                 payment.setAmount(request.getAmount());
 
-                payment.setMethod("VNPAY");
+                payment.setMethod(request.getMethod());
 
                 payment.setStatus("PENDING");
 
-                payment.setTransactionNo(txnRef);
-
                 payment.setCreatedAt(LocalDateTime.now());
 
+                payment.setTransactionNo(txnRef);
+
                 paymentRepository.save(payment);
+
+                if ("BANK_QR".equals(request.getMethod())) {
+                        return "BANK_QR";
+                }
 
                 // =========================
                 // VNPAY PARAMS

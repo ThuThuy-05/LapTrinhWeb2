@@ -1,5 +1,6 @@
 package com.booking.backend.service.impl;
 
+import com.booking.backend.dto.DoctorProfileRequest;
 import com.booking.backend.dto.DoctorRequest;
 import com.booking.backend.entity.*;
 import com.booking.backend.enums.Role;
@@ -216,6 +217,79 @@ public class DoctorServiceImpl implements DoctorService {
                 .orElseThrow(() -> new RuntimeException("Doctor not found"));
     }
 
+    @Override
+    public Doctor updateMyProfile(
+            String phone,
+            DoctorProfileRequest request) {
+
+        Doctor doctor = doctorRepository
+                .findByUser_Phone(phone)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        User user = doctor.getUser();
+
+        // CHECK EMAIL
+        if (userRepository.existsByEmailAndIdNot(
+                request.getEmail(),
+                user.getId())) {
+
+            throw new RuntimeException("Email đã tồn tại");
+        }
+
+        // CHECK PHONE
+        if (userRepository.existsByPhoneAndIdNot(
+                request.getPhone(),
+                user.getId())) {
+
+            throw new RuntimeException("Số điện thoại đã tồn tại");
+        }
+
+        // CHECK PHONE FORMAT
+        if (request.getPhone() == null ||
+                !request.getPhone().matches("^0\\d{9}$")) {
+
+            throw new RuntimeException(
+                    "Số điện thoại phải bắt đầu bằng 0 và gồm đúng 10 số");
+        }
+        // ======================
+        // USER
+        // ======================
+
+        user.setFirstName(request.getFirstName());
+
+        user.setLastName(request.getLastName());
+
+        user.setEmail(request.getEmail());
+
+        user.setPhone(request.getPhone());
+
+        user.setGender(request.getGender());
+
+        user.setDateOfBirth(request.getDateOfBirth());
+
+        user.setAddress(request.getAddress());
+
+        if (request.getAvatar() != null) {
+            user.setAvatar(request.getAvatar());
+        }
+
+        userRepository.save(user);
+
+        // ======================
+        // DOCTOR
+        // ======================
+
+        doctor.setDegree(
+                request.getDegree());
+
+        doctor.setExperience(
+                request.getExperience());
+
+        doctor.setDescription(
+                request.getDescription());
+
+        return doctorRepository.save(doctor);
+    }
     // =========================
     // DELETE
     // =========================
@@ -255,5 +329,10 @@ public class DoctorServiceImpl implements DoctorService {
             }
         }
         return count;
+    }
+
+    @Override
+    public List<Doctor> getDoctorsByBranch(Long branchId) {
+        return doctorRepository.findByBranch_Id(branchId);
     }
 }

@@ -14,8 +14,11 @@ import com.booking.backend.service.PaymentService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -158,9 +161,9 @@ public class PaymentController {
                                                 booking.getSchedule().getDate().toString(),
 
                                                 booking.getSchedule().getTimeStart().toString(),
-booking.getId().toString()
+                                                booking.getId().toString()
 
-                                );      
+                                );
                                 Schedule schedule = booking.getSchedule();
 
                                 if (schedule != null) {
@@ -185,5 +188,156 @@ booking.getId().toString()
 
                 response.sendRedirect(
                                 "http://localhost:3000/payment-failed");
+        }
+
+        @PostMapping("/confirm-bank-transfer/{bookingId}")
+        public ResponseEntity<?> confirmBankTransfer(
+
+                        @PathVariable Long bookingId) {
+
+                Booking booking = bookingRepository
+                                .findById(bookingId)
+                                .orElseThrow();
+
+                // Cập nhật trạng thái booking
+                booking.setStatus(BookingStatus.CONFIRMED);
+                bookingRepository.save(booking);
+
+                // Cập nhật trạng thái lịch khám
+                Schedule schedule = booking.getSchedule();
+
+                if (schedule != null) {
+                        schedule.setStatus(ScheduleStatus.BOOKED);
+                        scheduleRepository.save(schedule);
+                }
+
+                // Gửi email xác nhận
+                emailService.sendBookingSuccessMail(
+                                booking.getUser().getEmail(),
+                                booking.getUser().getFullName(),
+                                booking.getSchedule().getDoctor().getUser().getFullName(),
+                                booking.getSchedule().getDoctor().getSpecialty().getName(),
+                                booking.getSchedule().getRoom().getName(),
+                                booking.getSchedule().getDate().toString(),
+                                booking.getSchedule().getTimeStart().toString(),
+                                booking.getId().toString());
+
+                return ResponseEntity.ok(
+                                Map.of(
+                                                "message", "Thanh toán thành công"));
+        }
+
+        @PostMapping("/sepay-webhook")
+        public ResponseEntity<?> sepayWebhook(@RequestBody Map<String, Object> body) {
+
+                System.out.println("===== SEPAY WEBHOOK =====");
+                System.out.println(body);
+
+                try {
+                        String content = body.getOrDefault("content", "").toString();
+
+                        // =========================
+                        // 1. LẤY BOOKING ID TỪ KHAMxxx
+                        // =========================
+                        int index = content.indexOf("KHAM");
+                        if (index == -1) {
+                                return ResponseEntity.ok(Map.of("success", true));
+                        }
+
+                        Pattern pattern = Pattern.compile("KHAM(\\d+)");
+                        Matcher matcher = pattern.matcher(content);
+
+                        if (!matcher.find()) {
+                                return ResponseEntity.ok(Map.of("success", true));
+                        }
+
+                        Long bookingId = Long.parseLong(matcher.group(1));
+
+                        System.out.println("BOOKING ID = " + bookingId);
+
+                        // =========================
+                        // 2. FIND BOOKING
+                        // =========================
+                        Booking booking = bookingRepository.findById(bookingId).orElse(null);
+                        if (booking == null) {
+                                return ResponseEntity.ok(Map.of("success", true));
+                        }
+
+                        // =========================
+                        // 3. FIND / CREATE PAYMENT
+                        // =========================
+                        Payment payment = paymentRepository.findByBookingId(bookingId).orElse(null);
+
+                        if (payment == null) {
+                                payment = new Payment();
+                                payment.setBookingId(bookingId);
+                        }
+
+                        // =========================
+                        // 4. IDEMPOTENT (TRÁNH UPDATE LẠI)
+                        // =========================
+                        if ("SUCCESS".equals(payment.getStatus())) {
+                                return ResponseEntity.ok(Map.of("success", true));
+                        }
+
+                        // =========================
+                        // 5. UPDATE PAYMENT
+                        // =========================
+                        payment.setStatus("SUCCESS");
+                        paymentRepository.save(payment);
+
+                        // =========================
+                        // 6. UPDATE BOOKING
+                        // =========================
+                        booking.setStatus(BookingStatus.CONFIRMED);
+                        bookingRepository.save(booking);
+
+                        emailService.sendBookingSuccessMail(
+                                        booking.getUser().getEmail(),
+                                        booking.getUser().getFullName(),
+                                        booking.getSchedule().getDoctor().getUser().getFullName(),
+                                        booking.getSchedule().getDoctor().getSpecialty().getName(),
+                                        booking.getSchedule().getRoom().getName(),
+                                        booking.getSchedule().getDate().toString(),
+                                        booking.getSchedule().getTimeStart().toString(),
+                                        booking.getId().toString());
+
+                        // =========================
+                        // 7. UPDATE SCHEDULE
+                        // =========================
+                        Schedule schedule = booking.getSchedule();
+                        if (schedule != null) {
+                                schedule.setStatus(ScheduleStatus.BOOKED);
+                                scheduleRepository.save(schedule);
+                        }
+
+                        // =========================
+                        // 8. RESPONSE (GIỐNG VNPay STYLE)
+                        // =========================
+                        return ResponseEntity.ok(Map.of("success", true));
+
+                } catch (Exception e) {
+                        e.printStackTrace();
+                        return ResponseEntity.ok(Map.of("success", true));
+                }
+        }
+
+        @GetMapping("/booking/{bookingId}")
+        public ResponseEntity<?> getPaymentByBooking(
+                        @PathVariable Long bookingId) {
+
+                Payment payment = paymentRepository
+                                .findByBookingId(bookingId)
+                                .orElse(null);
+
+                if (payment == null) {
+                        return ResponseEntity.ok(
+                                        Map.of("status", "PENDING"));
+                }
+
+                return ResponseEntity.ok(
+                                Map.of(
+                                                "status",
+                                                payment.getStatus()));
         }
 }

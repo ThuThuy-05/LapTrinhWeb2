@@ -409,23 +409,51 @@ export default function DoctorDetailPage() {
             </InfoCard>
 
             <InfoCard icon={Hospital} title="Nơi làm việc">
-              <InfoRow
-                icon={MapPin}
-                label="Cơ sở y tế"
-                value={doctor.branch?.name || "Đang cập nhật"}
-              />
-              {doctor.branch?.address && (
-                <div className="mt-2 text-xs text-gray-500 pl-11">
-                  {doctor.branch.address}
+              <div className="space-y-4">
+                {/* Phần Chi nhánh - Hiển thị tên cơ sở */}
+                <div className="flex items-start gap-3">
+                  <div className="mt-0.5 p-2 bg-blue-50 rounded-lg text-blue-600">
+                    <MapPin size={18} />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+                      Cơ sở y tế
+                    </p>
+                    <p className="text-sm font-semibold text-slate-800 leading-tight">
+                      {doctor.branch?.name || "Đang cập nhật"}
+                    </p>
+                  </div>
                 </div>
-              )}
-              {doctor.branch?.phone && (
-                <InfoRow
-                  icon={Phone}
-                  label="SĐT liên hệ"
-                  value={doctor.branch.phone}
-                />
-              )}
+
+                {/* Phần Địa chỉ - Hiển thị ngay dưới tên chi nhánh */}
+                {doctor.branch?.address && (
+                  <div className="flex items-start gap-3 pl-2 border-l-2 border-slate-100 ml-[10px]">
+                    <p className="text-sm text-slate-500 leading-relaxed italic">
+                      {doctor.branch.address}
+                    </p>
+                  </div>
+                )}
+
+                {/* Phần SĐT - Hiển thị tách biệt hoặc nhấn mạnh */}
+                {doctor.branch?.phone && (
+                  <div className="flex items-center gap-3 pt-3 border-t border-slate-50">
+                    <div className="text-slate-400">
+                      <Phone size={16} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
+                        SĐT liên hệ
+                      </p>
+                      <a
+                        href={`tel:${doctor.branch.phone}`}
+                        className="text-sm font-medium text-blue-600 hover:underline"
+                      >
+                        {doctor.branch.phone}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </div>
             </InfoCard>
 
             <InfoCard icon={Clock} title="Lịch làm việc">
@@ -450,38 +478,6 @@ export default function DoctorDetailPage() {
                 </div>
               </div>
             </InfoCard>
-
-            <InfoCard icon={Video} title="Hình thức khám">
-              <div className="flex gap-3">
-                <div className="flex-1 text-center p-3 bg-green-50 rounded-xl">
-                  <CheckCircle
-                    size={20}
-                    className="text-green-600 mx-auto mb-1"
-                  />
-                  <p className="text-xs font-medium text-green-700">
-                    Khám trực tiếp
-                  </p>
-                </div>
-                <div className="flex-1 text-center p-3 bg-blue-50 rounded-xl">
-                  <Video size={20} className="text-blue-600 mx-auto mb-1" />
-                  <p className="text-xs font-medium text-blue-700">
-                    Telehealth
-                  </p>
-                </div>
-              </div>
-            </InfoCard>
-
-            <div className="sticky top-24 space-y-3">
-              <button
-                onClick={() => router.push(`/booking/${doctor.id}`)}
-                className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg transition-all transform hover:scale-105"
-              >
-                <CalendarDays size={18} /> Đặt lịch khám ngay
-              </button>
-              <button className="w-full border-2 border-blue-600 text-blue-600 hover:bg-blue-50 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
-                <Phone size={18} /> Gọi tư vấn miễn phí
-              </button>
-            </div>
           </div>
         </div>
       </div>

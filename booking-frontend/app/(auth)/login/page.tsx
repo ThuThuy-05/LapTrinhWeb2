@@ -44,9 +44,17 @@ export default function LoginPage() {
 
       // 🔥 lưu localStorage (CHỈ 1 LẦN)
       localStorage.setItem("token", data.token);
-      localStorage.setItem("role", role);
-      localStorage.setItem("userId", data.id);
-      localStorage.setItem("fullName", data.fullName);
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.id,
+          doctorId: data.doctorId,
+          role: role,
+          fullName: data.fullName,
+          phone: data.phone,
+        }),
+      );
 
       setIsSuccess(true);
       setMessage("Đăng nhập thành công!");

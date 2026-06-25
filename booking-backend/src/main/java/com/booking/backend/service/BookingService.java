@@ -2,6 +2,7 @@ package com.booking.backend.service;
 
 import com.booking.backend.dto.BookingRequest;
 import com.booking.backend.entity.Booking;
+import com.booking.backend.enums.BookingStatus;
 
 import java.util.List;
 
@@ -20,4 +21,14 @@ public interface BookingService {
     void deleteBooking(Long id);
 
     List<Booking> getMyBookings(Long userId);
+
+    List<Booking> getBookingsByDoctor(Long doctorId);
+
+    Booking cancelBooking(Long bookingId);
+
+    // Booking updateBookingStatus(Long bookingId, BookingStatus status);
+    Booking updateBookingStatus(Long bookingId, BookingStatus status,
+            String diagnosis,
+            String prescription,
+            String doctorNote);
 }

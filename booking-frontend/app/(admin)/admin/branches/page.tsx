@@ -34,6 +34,7 @@ const fontStyle = `
 type Branch = {
   id: number;
   name: string;
+  address: string;
   active: boolean;
 };
 
@@ -53,7 +54,7 @@ export default function BranchPage() {
   // Form states
   const [name, setName] = useState("");
   const [active, setActive] = useState(true);
-
+  const [address, setAddress] = useState("");
   // Error state
   const [error, setError] = useState("");
 
@@ -81,6 +82,7 @@ export default function BranchPage() {
   // Reset form function
   const resetForm = () => {
     setName("");
+    setAddress("");
     setActive(true);
     setEditingId(null);
     setError("");
@@ -104,6 +106,7 @@ export default function BranchPage() {
     if (branch) {
       setEditingId(branch.id);
       setName(branch.name);
+      setAddress(branch.address);
       setActive(branch.active);
     }
     setIsModalOpen(true);
@@ -124,19 +127,28 @@ export default function BranchPage() {
       return;
     }
 
+    if (!address.trim()) {
+      setError("Vui lòng nhập địa chỉ chi nhánh");
+      return;
+    }
+
     setError("");
 
     try {
       setSubmitLoading(true);
-
       if (editingId) {
-        await updateBranch(editingId, { name, active });
-        alert("Cập nhật thành công!");
+        await updateBranch(editingId, {
+          name,
+          address,
+          active,
+        });
       } else {
-        await createBranch({ name });
+        await createBranch({
+          name,
+          address,
+        });
         alert("Thêm mới thành công!");
       }
-
       await fetchBranches();
       closeModal();
     } catch (err: any) {
@@ -260,6 +272,9 @@ export default function BranchPage() {
                     Tên chi nhánh
                   </th>
                   <th className="px-5 py-4 text-left text-[11px] font-extrabold text-[#1F4A5C] uppercase tracking-wider">
+                    Địa chỉ
+                  </th>
+                  <th className="px-5 py-4 text-left text-[11px] font-extrabold text-[#1F4A5C] uppercase tracking-wider">
                     Trạng thái
                   </th>
                   <th className="px-5 py-4 text-right text-[11px] font-extrabold text-[#1F4A5C] uppercase tracking-wider">
@@ -299,6 +314,11 @@ export default function BranchPage() {
                       <td className="px-5 py-3">
                         <p className="font-extrabold text-[#1F4A5C] text-sm">
                           {branch.name}
+                        </p>
+                      </td>
+                      <td className="px-5 py-3">
+                        <p className="text-[#5B8C9E] text-sm">
+                          {branch.address}
                         </p>
                       </td>
                       <td className="px-5 py-3">
@@ -409,6 +429,20 @@ export default function BranchPage() {
                     )}
                   </div>
 
+                  <div>
+                    <label className="text-[11px] font-extrabold text-[#1F4A5C] uppercase tracking-wider mb-2 block">
+                      Địa chỉ <span className="text-[#F43F5E]">*</span>
+                    </label>
+
+                    <textarea
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      rows={3}
+                      placeholder="Nhập địa chỉ chi nhánh"
+                      className="w-full px-4 py-3 bg-[#F0FDFA] rounded-xl text-sm outline-none transition-all font-semibold border border-[#D0F0FD] focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20"
+                    />
+                  </div>
+
                   {editingId && (
                     <div className="flex items-center justify-between p-3 bg-[#F0FDFA] rounded-xl border border-[#D0F0FD]">
                       <label className="text-[11px] font-extrabold text-[#1F4A5C] uppercase tracking-wider flex-1">
@@ -514,6 +548,15 @@ export default function BranchPage() {
                     </span>
                     <span className="font-semibold text-[#1F4A5C]">
                       {selectedBranch.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-start py-2 border-b border-[#E6F7F5]">
+                    <span className="text-[#5B8C9E] font-semibold">
+                      Địa chỉ:
+                    </span>
+
+                    <span className="font-semibold text-[#1F4A5C] text-right max-w-[220px]">
+                      {selectedBranch.address}
                     </span>
                   </div>
                   <div className="flex justify-between items-center py-2">

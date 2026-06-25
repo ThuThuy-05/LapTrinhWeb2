@@ -120,32 +120,9 @@ export default function BannerList() {
           />
         </div>
 
-        {/* GRADIENT OVERLAY - SÁNG HƠN */}
-        <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-black/20 to-transparent">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-        </div>
-
         {/* CONTENT */}
         <div className="relative h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-full flex flex-col justify-center max-w-2xl animate-fadeIn">
-            {/* BADGE */}
-            <div className="mb-3">
-              <span className="inline-block px-3 py-1 bg-white/15 backdrop-blur-sm border border-white/30 rounded-full text-white/90 text-xs font-semibold tracking-wide">
-                🏥 MEDICAL HEALTH CARE CENTER
-              </span>
-            </div>
-
-            {/* TITLE - THU NHỎ FONT */}
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight animate-slideUp">
-              {currentBanner.title || "Đặt lịch khám bệnh trực tuyến dễ dàng"}
-            </h1>
-
-            {/* DESCRIPTION - THU NHỎ */}
-            <p className="mt-3 text-sm md:text-base text-white/80 leading-relaxed max-w-xl animate-slideUp animation-delay-100">
-              {currentBanner.description ||
-                "Tìm bác sĩ phù hợp, xem lịch khám và đặt lịch nhanh chóng mọi lúc mọi nơi."}
-            </p>
-
             {/* BUTTONS */}
             <div className="mt-5 flex flex-wrap gap-3 animate-slideUp animation-delay-200">
               <a

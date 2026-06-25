@@ -81,6 +81,8 @@ export default function SchedulePage() {
     status: "AVAILABLE",
   });
 
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+
   // Fetch all data
   const fetchAllData = async () => {
     try {
@@ -261,14 +263,9 @@ export default function SchedulePage() {
       }
     }
 
-    if (!formData.timeStart) {
-      newErrors.timeStart = "Vui lòng chọn giờ bắt đầu";
-      isValid = false;
-    }
-
-    if (!formData.timeEnd) {
-      newErrors.timeEnd = "Vui lòng chọn giờ kết thúc";
-      isValid = false;
+    if (selectedSlots.length === 0) {
+      alert("Vui lòng chọn ít nhất 1 khung giờ");
+      return false;
     }
 
     if (formData.timeStart && formData.timeEnd) {
@@ -288,6 +285,18 @@ export default function SchedulePage() {
     }
 
     try {
+      const now = new Date();
+
+      for (const slot of selectedSlots) {
+        const [start] = slot.split("-");
+
+        const slotDateTime = new Date(`${formData.date}T${start}:00`);
+
+        if (slotDateTime < now) {
+          alert(`Khung giờ ${slot} đã qua!`);
+          return;
+        }
+      }
       setLoading(true);
       const payload = {
         doctorId: Number(formData.doctorId),
@@ -307,8 +316,22 @@ export default function SchedulePage() {
       if (editingId) {
         await updateSchedule(editingId, payload);
         alert("Cập nhật lịch trực thành công!");
+        console.log("Doctor:", formData.doctorId);
+        console.log("Room:", formData.roomId);
+        console.log("Slots:", selectedSlots);
       } else {
-        await createSchedule(payload);
+        for (const slot of selectedSlots) {
+          const [start, end] = slot.split("-");
+
+          await createSchedule({
+            doctorId: Number(formData.doctorId),
+            roomId: Number(formData.roomId),
+            date: formData.date,
+            timeStart: `${start}:00`,
+            timeEnd: `${end}:00`,
+            status: "AVAILABLE",
+          });
+        }
         alert("Thêm mới lịch trực thành công!");
       }
 
@@ -384,6 +407,70 @@ export default function SchedulePage() {
   const uniqueDoctors = doctors;
   const uniqueRooms = rooms;
   const uniqueSpecialties = specialties;
+
+  const generateSlots = () => {
+    const slots = [];
+
+    let hour = 7;
+    let minute = 30;
+
+    while (hour < 17) {
+      const start = `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+
+      let endMinute = minute + 15;
+      let endHour = hour;
+
+      if (endMinute >= 60) {
+        endHour++;
+        endMinute -= 60;
+      }
+
+      const end = `${String(endHour).padStart(2, "0")}:${String(endMinute).padStart(2, "0")}`;
+
+      slots.push({
+        start,
+        end,
+        value: `${start}-${end}`,
+      });
+
+      minute += 20;
+
+      while (minute >= 60) {
+        hour++;
+        minute -= 60;
+      }
+    }
+
+    return slots;
+  };
+
+  const slots = generateSlots();
+
+  const isPastSlot = (slotStart: string) => {
+    if (!formData.date) return false;
+
+    const now = new Date();
+
+    const slotDateTime = new Date(`${formData.date}T${slotStart}:00`);
+
+    return slotDateTime < now;
+  };
+
+  const isBookedSlot = (slotValue: string) => {
+    if (!formData.doctorId || !formData.date) return false;
+
+    return schedules.some((schedule) => {
+      const start = schedule.timeStart?.substring(0, 5) || "";
+
+      const end = schedule.timeEnd?.substring(0, 5) || "";
+
+      return (
+        schedule.doctor?.id === Number(formData.doctorId) &&
+        schedule.date === formData.date &&
+        `${start}-${end}` === slotValue
+      );
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#E6F7F5] via-white to-[#F0FDFA] p-4 md:p-8 font-sans">
@@ -825,7 +912,8 @@ export default function SchedulePage() {
         {/* Add/Edit Modal */}
         {isModalOpen && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden my-8">
+            <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden my-8">
+              {" "}
               <div className="bg-gradient-to-r from-[#2DD4BF] to-[#0EA5E9] px-6 py-4 flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-white flex items-center gap-2">
                   <Calendar size={18} />
@@ -841,7 +929,6 @@ export default function SchedulePage() {
                   <X size={20} />
                 </button>
               </div>
-
               <div className="p-6">
                 <div className="space-y-4">
                   {/* Bác sĩ */}
@@ -853,8 +940,21 @@ export default function SchedulePage() {
                       className={`w-full px-4 py-2.5 bg-[#F0FDFA] rounded-xl border text-sm outline-none transition-all ${errors.doctorId ? "border-red-500" : "border-[#D0F0FD] focus:border-[#2DD4BF]"}`}
                       value={formData.doctorId}
                       onChange={(e) => {
-                        setFormData({ ...formData, doctorId: e.target.value });
-                        setErrors({ ...errors, doctorId: "" });
+                        const doctorId = e.target.value;
+
+                        const doctor = doctors.find(
+                          (d) => d.id.toString() === doctorId,
+                        );
+
+                        const room = rooms.find(
+                          (r) => r.branch?.id === doctor?.branch?.id,
+                        );
+
+                        setFormData({
+                          ...formData,
+                          doctorId,
+                          roomId: room?.id?.toString() || "",
+                        });
                       }}
                     >
                       <option value="">-- Chọn bác sĩ --</option>
@@ -879,6 +979,7 @@ export default function SchedulePage() {
                     <select
                       className={`w-full px-4 py-2.5 bg-[#F0FDFA] rounded-xl border text-sm outline-none transition-all 
                 ${errors.roomId ? "border-red-500 focus:ring-red-200" : "border-[#D0F0FD] focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20"}`}
+                      disabled
                       value={formData.roomId}
                       onChange={(e) => {
                         setFormData({ ...formData, roomId: e.target.value });
@@ -921,47 +1022,59 @@ export default function SchedulePage() {
                   </div>
 
                   {/* Giờ bắt đầu + Giờ kết thúc */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs font-semibold text-[#1F4A5C] mb-1 block">
-                        Giờ bắt đầu <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="time"
-                        className={`w-full px-4 py-2.5 bg-[#F0FDFA] rounded-xl border text-sm outline-none transition-all ${errors.timeStart ? "border-red-500" : "border-[#D0F0FD] focus:border-[#2DD4BF]"}`}
-                        value={formData.timeStart}
-                        onChange={(e) => {
-                          setFormData({
-                            ...formData,
-                            timeStart: e.target.value,
-                          });
-                          setErrors({ ...errors, timeStart: "", timeEnd: "" });
-                        }}
-                      />
-                      {errors.timeStart && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.timeStart}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label className="text-xs font-semibold text-[#1F4A5C] mb-1 block">
-                        Giờ kết thúc <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="time"
-                        className={`w-full px-4 py-2.5 bg-[#F0FDFA] rounded-xl border text-sm outline-none transition-all ${errors.timeEnd ? "border-red-500" : "border-[#D0F0FD] focus:border-[#2DD4BF]"}`}
-                        value={formData.timeEnd}
-                        onChange={(e) => {
-                          setFormData({ ...formData, timeEnd: e.target.value });
-                          setErrors({ ...errors, timeEnd: "" });
-                        }}
-                      />
-                      {errors.timeEnd && (
-                        <p className="text-red-500 text-xs mt-1">
-                          {errors.timeEnd}
-                        </p>
-                      )}
+                  <div>
+                    <label className="text-xs font-semibold text-[#1F4A5C] mb-2 block">
+                      Khung giờ làm việc
+                    </label>
+
+                    <div className="grid grid-cols-3 gap-2 max-h-64 overflow-y-auto">
+                      {slots.map((slot) => (
+                        <label
+                          key={slot.value}
+                          className={`
+flex items-center gap-2
+rounded-xl p-3 border transition-all
+
+${
+  isBookedSlot(slot.value)
+    ? "bg-red-50 border-red-300 text-red-500 cursor-not-allowed"
+    : isPastSlot(slot.start)
+      ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+      : selectedSlots.includes(slot.value)
+        ? "bg-[#E6F7F5] border-[#2DD4BF]"
+        : "border-[#D0F0FD] hover:border-[#2DD4BF]"
+}
+`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedSlots.includes(slot.value)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedSlots([
+                                  ...selectedSlots,
+                                  slot.value,
+                                ]);
+                              } else {
+                                setSelectedSlots(
+                                  selectedSlots.filter(
+                                    (item) => item !== slot.value,
+                                  ),
+                                );
+                              }
+                            }}
+                          />
+
+                          <span className="text-sm">
+                            {slot.start} - {slot.end}
+                          </span>
+                          {isBookedSlot(slot.value) && (
+                            <span className="text-xs text-red-500 font-medium ml-2">
+                              Đã xếp
+                            </span>
+                          )}
+                        </label>
+                      ))}
                     </div>
                   </div>
 

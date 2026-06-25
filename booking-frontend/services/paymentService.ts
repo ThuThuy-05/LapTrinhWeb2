@@ -1,6 +1,6 @@
 import api from "@/lib/api";
 
-export type PaymentMethod = "VNPAY" | "MOMO" | "CASH";
+export type PaymentMethod = "VNPAY" | "MOMO" | "CASH" | "BANK_QR";
 
 export interface CreatePaymentRequest {
   bookingId: number;
@@ -24,6 +24,15 @@ export const createPayment = async (
 
 export const getPaymentByBooking = async (bookingId: number) => {
   const response = await api.get(`/payments/booking/${bookingId}`);
+
+  return response.data;
+};
+
+// THÊM HÀM NÀY
+export const confirmBankTransfer = async (bookingId: number) => {
+  const response = await api.post(
+    `/payments/confirm-bank-transfer/${bookingId}`,
+  );
 
   return response.data;
 };

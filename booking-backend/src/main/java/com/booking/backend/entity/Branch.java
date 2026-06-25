@@ -13,9 +13,13 @@ public class Branch {
     private Long id;
 
     // TÊN CHI NHÁNH
+    @Column(nullable = false)
     private String name;
 
-  
+    // ĐỊA CHỈ CHI NHÁNH
+    @Column(nullable = false, length = 500)
+    private String address;
+
     // ACTIVE
     private Boolean active = true;
 }

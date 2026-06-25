@@ -181,3 +181,38 @@ export const importDoctorsFromExcel = async (file: File): Promise<any> => {
 
   return response.data;
 };
+
+// =========================
+
+// =========================
+// UPDATE MY PROFILE
+// =========================
+
+export const updateMyDoctorProfile = async (data: any) => {
+  const formData = new FormData();
+
+  Object.keys(data).forEach((key) => {
+    if (key === "file") {
+      if (data[key]) {
+        formData.append("file", data[key]);
+      }
+    } else if (
+      data[key] !== undefined &&
+      data[key] !== null
+    ) {
+      formData.append(key, String(data[key]));
+    }
+  });
+
+  const response = await api.put(
+    "/doctor/me",
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data;
+};

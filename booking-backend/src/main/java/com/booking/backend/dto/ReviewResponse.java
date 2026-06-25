@@ -10,6 +10,7 @@ public class ReviewResponse {
     private Long userId; // thêm
     private String userName;
     private String doctorName;
+    private Long doctorId;
     private Integer rating;
     private String comment;
     private LocalDateTime createdAt;

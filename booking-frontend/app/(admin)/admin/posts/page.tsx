@@ -48,7 +48,7 @@ export default function AdminPostsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 8;
 
   const [currentId, setCurrentId] = useState<number | null>(null);
   const [title, setTitle] = useState("");

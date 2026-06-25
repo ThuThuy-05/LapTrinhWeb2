@@ -1,0 +1,199 @@
+"use client";
+
+import { User, Clock, CheckCircle2, X, AlertCircle, Eye } from "lucide-react";
+
+interface GroupedPatient {
+  userId: number;
+  fullName: string;
+  phone: string;
+  email: string;
+  gender: string;
+  address: string;
+  dateOfBirth?: string;
+  latestBookingDate: string;
+  latestStatus: string;
+  latestSymptom: string;
+  allBookings: any[];
+}
+
+const getStatusConfig = (status: string) => {
+  switch (status?.toUpperCase()) {
+    case "PENDING":
+      return {
+        label: "Chờ xác nhận",
+        color: "bg-amber-50 text-amber-700 border-amber-200",
+        icon: <Clock className="w-4 h-4" />,
+      };
+    case "CONFIRMED":
+      return {
+        label: "Đã xác nhận",
+        color: "bg-blue-50 text-blue-700 border-blue-200",
+        icon: <CheckCircle2 className="w-4 h-4" />,
+      };
+    case "COMPLETED":
+      return {
+        label: "Đã khám",
+        color: "bg-green-50 text-green-700 border-green-200",
+        icon: <CheckCircle2 className="w-4 h-4" />,
+      };
+    case "CANCELLED":
+      return {
+        label: "Đã hủy",
+        color: "bg-red-50 text-red-700 border-red-200",
+        icon: <X className="w-4 h-4" />,
+      };
+    default:
+      return {
+        label: status || "Không xác định",
+        color: "bg-gray-50 text-gray-700 border-gray-200",
+        icon: <AlertCircle className="w-4 h-4" />,
+      };
+  }
+};
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "N/A";
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+interface PatientTableProps {
+  patients: GroupedPatient[];
+  totalPatients: number;
+  onViewDetail: (patient: GroupedPatient) => void;
+}
+
+export default function PatientTable({
+  patients,
+  totalPatients,
+  onViewDetail,
+}: PatientTableProps) {
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <User className="w-5 h-5 text-cyan-600" />
+            <h2 className="font-semibold text-slate-800">
+              Danh sách bệnh nhân
+            </h2>
+          </div>
+          <div className="text-sm text-slate-500">
+            Hiển thị {patients.length} / {totalPatients} bệnh nhân
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="bg-slate-50 border-b border-slate-100">
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Bệnh nhân
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Liên hệ
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Ngày khám gần nhất
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Triệu chứng
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Trạng thái
+              </th>
+              <th className="px-6 py-3 text-center text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                Chi tiết
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {patients.length > 0 ? (
+              patients.map((patient) => {
+                const statusConfig = getStatusConfig(patient.latestStatus);
+                return (
+                  <tr
+                    key={patient.userId}
+                    className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-cyan-100 to-blue-100 rounded-xl flex items-center justify-center">
+                          <User className="w-5 h-5 text-cyan-600" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800">
+                            {patient.fullName}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {patient.gender === "MALE"
+                              ? "Nam"
+                              : patient.gender === "FEMALE"
+                                ? "Nữ"
+                                : "Khác"}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-slate-700">{patient.phone}</p>
+                      <p className="text-xs text-slate-400 truncate max-w-[150px]">
+                        {patient.email}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm font-medium text-slate-700">
+                        {formatDate(patient.latestBookingDate)}
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Đã khám {patient.allBookings.length} lần
+                      </p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <p className="text-sm text-slate-700 max-w-[200px] truncate">
+                        {patient.latestSymptom || "Không có"}
+                      </p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${statusConfig.color}`}
+                      >
+                        {statusConfig.icon}
+                        {statusConfig.label}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => onViewDetail(patient)}
+                        className="px-3 py-1.5 text-sm text-cyan-600 hover:bg-cyan-50 rounded-lg transition-colors font-medium"
+                      >
+                        Xem
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })
+            ) : (
+              <tr>
+                <td colSpan={6} className="px-6 py-16 text-center">
+                  <div className="flex flex-col items-center gap-2">
+                    <User className="w-12 h-12 text-slate-300" />
+                    <p className="text-slate-500 font-medium">
+                      Không có bệnh nhân
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

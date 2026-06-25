@@ -7,23 +7,21 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex bg-[#f8fafc] min-h-screen">
-      {/* Thanh bên trái */}
+    <div className="flex min-h-screen bg-slate-50">
+      {" "}
+      {/* Thêm màu nền cho phần nội dung bên phải */}
       <Sidebar />
-
-      <div className="flex-1 flex flex-col">
-        {/* Thanh trên cùng */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {" "}
+        {/* min-w-0 giúp fix lỗi tràn ngang */}
         <Header />
-
-        {/* Nội dung chính */}
-        <main className="p-8 animate-in fade-in duration-500">
-          <div className="max-w-7xl mx-auto">{children}</div>
+        <main className="flex-1 p-8 animate-in fade-in duration-500">
+          {children} {/* Bỏ max-w-7xl để nội dung tràn hết nếu bạn muốn */}
         </main>
       </div>
     </div>
   );
 }
-
 // "use client";
 
 // import { useRouter } from "next/navigation";

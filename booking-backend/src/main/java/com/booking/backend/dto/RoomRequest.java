@@ -13,4 +13,6 @@ public class RoomRequest {
 
     // Trạng thái
     private Boolean active;
+
+    private Long branchId;
 }

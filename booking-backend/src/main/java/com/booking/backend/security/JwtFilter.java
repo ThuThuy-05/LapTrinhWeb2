@@ -35,7 +35,8 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/swagger-ui")
                 || path.startsWith("/v3/api-docs")
                 // Thêm dòng này để Filter KHÔNG kiểm tra token của API lịch trình
-                || path.startsWith("/api/payments/")
+                || path.startsWith("/api/payments")
+                || path.startsWith("/api/payment")
                 || path.startsWith("/api/schedules")
                 || path.startsWith("/api/doctors")
                 || path.startsWith("/api/specialties");

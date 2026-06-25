@@ -7,6 +7,7 @@ import api from "@/lib/api";
 export type Branch = {
   id: number;
   name: string;
+  address: string;
   active: boolean;
 };
 
@@ -31,7 +32,11 @@ export const getBranchById = async (id: number | string): Promise<Branch> => {
 // ADMIN: CREATE
 // =========================
 
-export const createBranch = async (data: { name: string }): Promise<Branch> => {
+export const createBranch = async (data: {
+  name: string;
+  address: string;
+  active?: boolean;
+}): Promise<Branch> => {
   const res = await api.post("/admin/branches", data);
   return res.data;
 };
@@ -42,7 +47,7 @@ export const createBranch = async (data: { name: string }): Promise<Branch> => {
 
 export const updateBranch = async (
   id: number | string,
-  data: { name: string; active?: boolean },
+  data: { name: string; address: string; active?: boolean },
 ): Promise<Branch> => {
   const res = await api.put(`/admin/branches/${id}`, data);
   return res.data;
@@ -54,4 +59,10 @@ export const updateBranch = async (
 
 export const deleteBranch = async (id: number | string): Promise<void> => {
   await api.delete(`/admin/branches/${id}`);
+};
+
+export const getDoctorsByBranch = async (branchId: number | string) => {
+  const res = await api.get(`/branches/${branchId}/doctors`);
+
+  return res.data;
 };

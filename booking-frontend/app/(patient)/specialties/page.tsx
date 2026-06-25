@@ -183,24 +183,17 @@ export default function SpecialtyPage() {
                   className="bg-white rounded-2xl border border-slate-200/50 shadow-[0_2px_12px_-5px_rgba(0,0,0,0.05)] hover:shadow-[0_20px_32px_-12px_rgba(59,130,246,0.15)] hover:-translate-y-1.5 hover:border-blue-500/30 transition-all duration-300 overflow-hidden flex flex-col group cursor-pointer"
                 >
                   {/* IMAGE */}
-                  <div
-                    onClick={() => handleCardClick(item.id)}
-                    className="relative w-full h-52 bg-slate-100 overflow-hidden shrink-0"
-                  >
+                  <div className="relative w-full h-52 bg-white rounded-t-2xl overflow-hidden">
                     <Image
-                      src={item.image || "https://via.placeholder.com/500x300"}
+                      src={item.image || "/placeholder.jpg"}
                       alt={item.name}
                       fill
-                      sizes="(max-w-1024px) 100vw, 33vw"
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      priority={false}
+                      // Dùng 'object-contain' nếu bạn muốn thấy toàn bộ hình,
+                      // dùng 'object-cover' nếu muốn lấp đầy khung hình
+                      className="object-contain p-4 transition-transform duration-500 hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 33vw"
+                      quality={100} // Thêm thuộc tính này để tăng chất lượng lên tối đa
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                    <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-800 text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-md shadow-sm border border-white/50 uppercase flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block animate-pulse"></span>{" "}
-                      Medical
-                    </span>
                   </div>
 
                   {/* TEXT INFO CONTAINER */}

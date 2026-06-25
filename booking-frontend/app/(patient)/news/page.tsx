@@ -12,11 +12,14 @@ import {
   ChevronRight,
   Newspaper,
 } from "lucide-react";
+import PaginationPatient from "@/components/PaginationPatient";
 
 export default function NewsPage() {
   const router = useRouter();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 8;
 
   useEffect(() => {
     loadPosts();
@@ -65,6 +68,21 @@ export default function NewsPage() {
   const getRandomLikes = () => {
     return Math.floor(Math.random() * 200) + 10;
   };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+  const totalPages = Math.ceil(posts.length / itemsPerPage);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+
+  const currentPosts = posts.slice(startIndex, endIndex);
 
   if (loading) {
     return (
@@ -120,7 +138,7 @@ export default function NewsPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {posts.map((post) => {
+              {currentPosts.map((post) => {
                 const views = getRandomViews();
                 const likes = getRandomLikes();
 
@@ -193,6 +211,15 @@ export default function NewsPage() {
             </div>
           )}
         </div>
+        {posts.length > 0 && totalPages > 1 && (
+          <div className="mt-10">
+            <PaginationPatient
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={goToPage}
+            />
+          </div>
+        )}
       </section>
     </div>
   );

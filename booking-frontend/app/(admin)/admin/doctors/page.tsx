@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import Pagination from "@/components/Pagination";
+import * as XLSX from "xlsx";
 
 const fontStyle = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap');
@@ -102,55 +103,34 @@ export default function DoctorPage() {
   const [showImportModal, setShowImportModal] = useState(false);
   const [importFile, setImportFile] = useState<File | null>(null);
   const [importPreview, setImportPreview] = useState<any[]>([]);
+
   // Fetch data
-  // const fetchData = async () => {
-  //   try {
-  //     setFetching(true);
-  //     const [docs, specs, branchs] = await Promise.all([
-  //       getAllDoctors(),
-  //       getAllSpecialties(),
-  //       getAllBranches(),
-  //     ]);
-  //     setDoctors(docs || []);
-  //     setSpecialties(specs || []);
-  //     setBranches(branchs || []);
-  //   } catch (e) {
-  //     console.error(e);
-  //   } finally {
-  //     setFetching(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchData();
-  // }, []);
-
-  useEffect(() => {
-    const fetchData = async () => {
+  const fetchData = async () => {
+    try {
       setFetching(true);
 
-      try {
-        const [docs, specs, branchs] = await Promise.all([
-          getAllDoctors(),
-          getAllSpecialties(),
-          getAllBranches(),
-        ]);
+      const [docs, specs, branchs] = await Promise.all([
+        getAllDoctors(),
+        getAllSpecialties(),
+        getAllBranches(),
+      ]);
 
-        const newState = {
-          doctors: docs || [],
-          specialties: specs || [],
-          branches: branchs || [],
-        };
+      setDoctors(docs || []);
+      setSpecialties(specs || []);
+      setBranches(branchs || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setFetching(false);
+    }
+  };
 
-        setDoctors(newState.doctors);
-        setSpecialties(newState.specialties);
-        setBranches(newState.branches);
-      } finally {
-        setFetching(false);
-      }
+  useEffect(() => {
+    const load = async () => {
+      await fetchData();
     };
 
-    fetchData();
+    load();
   }, []);
 
   // Filter
@@ -185,9 +165,11 @@ export default function DoctorPage() {
     currentPage * itemsPerPage,
   );
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm, selectedSpecialty, selectedBranch]);
+  // useEffect(() => {
+  //   if (currentPage !== 1) {
+  //     setCurrentPage(1);
+  //   }
+  // }, [searchTerm, selectedSpecialty, selectedBranch, currentPage]);
 
   // Validate
   const validateForm = () => {
@@ -199,7 +181,12 @@ export default function DoctorPage() {
     if (!formData.email.trim()) newErrors.email = "Vui lòng nhập email";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email không hợp lệ";
-    if (!formData.phone.trim()) newErrors.phone = "Vui lòng nhập số điện thoại";
+    if (!formData.phone.trim()) {
+      newErrors.phone = "Vui lòng nhập số điện thoại";
+    } else if (!/^0\d{9}$/.test(formData.phone)) {
+      newErrors.phone =
+        "Số điện thoại phải gồm đúng 10 số và bắt đầu bằng số 0";
+    }
     if (!editingId && !formData.password)
       newErrors.password = "Vui lòng nhập mật khẩu";
     if (formData.password && formData.password.length < 6)
@@ -446,8 +433,7 @@ export default function DoctorPage() {
   // Download template Excel
   // Download template Excel - Cách 2: Tạo từ array để kiểm soát header chính xác
   const downloadTemplate = () => {
-    const XLSX = require("xlsx");
-
+    // const XLSX = require("xlsx");
     // Định nghĩa headers đúng thứ tự như file export
     const headers = [
       "STT",
@@ -611,7 +597,10 @@ export default function DoctorPage() {
                 placeholder="Tìm kiếm theo tên, email, SĐT, chuyên khoa, chi nhánh..."
                 className="w-full pl-11 pr-4 py-2.5 rounded-xl bg-[#F0FDFA] border border-[#D0F0FD] focus:border-[#2DD4BF] focus:ring-2 focus:ring-[#2DD4BF]/20 text-sm outline-none transition-all text-[#1F4A5C] placeholder:text-[#B8D9E6] font-medium"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
               />
             </div>
 
@@ -1381,8 +1370,9 @@ export default function DoctorPage() {
                     📋 Tải file mẫu
                   </p>
                   <p className="text-xs text-[#5B8C9E] mb-3">
-                    Tải file Excel mẫu để có đúng định dạng cột. Cột "Tên chuyên
-                    khoa" và "Tên chi nhánh" phải trùng khớp với hệ thống.
+                    Tải file Excel mẫu để có đúng định dạng cột. Đảm bảo nhập
+                    đúng tên cột và định dạng dữ liệu để quá trình import diễn
+                    ra suôn sẻ.
                   </p>
                   <button
                     onClick={downloadTemplate}

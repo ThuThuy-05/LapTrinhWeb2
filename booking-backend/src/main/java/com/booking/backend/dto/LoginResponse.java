@@ -7,7 +7,7 @@ import lombok.Data;
 @AllArgsConstructor
 public class LoginResponse {
     private Long id;
-
+    private Long doctorId;
     private String token;
     private String role;
     private String fullName;

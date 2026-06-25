@@ -88,4 +88,9 @@ public class ReviewController {
         Review saved = reviewRepository.save(r);
         return reviewService.mapToResponse(saved); // ✅ Giờ sẽ hoạt động
     }
+
+    @GetMapping("/admin/reviews")
+    public List<ReviewResponse> getAllReviews() {
+        return reviewService.getAllReviews();
+    }
 }

@@ -1,4 +1,3 @@
-// services/contactService.ts
 import api from "@/lib/api";
 
 export interface ContactData {
@@ -7,34 +6,29 @@ export interface ContactData {
   phone: string;
   subject: string;
   message: string;
+  userId: number;
 }
 
 export interface ContactResponse {
-  success: boolean;
   id: number;
   status: string;
+  message: string;
 }
 
-export interface MessageData {
-  content: string;
-  sender: "user" | "support";
-  contact_id?: number;
-}
-
-export interface MessageResponse {
-  success: boolean;
+export interface Contact {
   id: number;
+  name: string;
+  email: string;
+  phone: string;
+  subject: string;
+  message: string;
+  status: "PENDING" | "DONE";
+  adminReply?: string;
+  replyAt?: string;
+  createdAt: string;
 }
 
-export interface ChatMessage {
-  id: number;
-  content: string;
-  sender: "user" | "support";
-  contact_id: number | null;
-  created_at: string;
-}
-
-// Tạo liên hệ mới (bảng contacts)
+// Patient gửi liên hệ
 export const createContact = async (
   data: ContactData,
 ): Promise<ContactResponse> => {
@@ -42,24 +36,27 @@ export const createContact = async (
   return response.data;
 };
 
-// Gửi tin nhắn chat (bảng messages)
-export const sendChatMessage = async (
-  data: MessageData,
-): Promise<MessageResponse> => {
-  const response = await api.post("/messages", data);
+// Lấy tất cả liên hệ (Admin)
+export const getContacts = async (): Promise<Contact[]> => {
+  const response = await api.get("/contacts");
   return response.data;
 };
 
-// Lấy lịch sử chat theo contact_id
-export const getChatHistory = async (
-  contactId: number,
-): Promise<ChatMessage[]> => {
-  const response = await api.get(`/messages?contact_id=${contactId}`);
+// Lấy chi tiết liên hệ
+export const getContactById = async (id: number): Promise<Contact> => {
+  console.log("ID =", id);
+
+  const response = await api.get(`/contacts/${id}`);
   return response.data;
 };
+// Admin phản hồi
+export const replyContact = async (
+  id: number,
+  reply: string,
+): Promise<Contact> => {
+  const response = await api.post(`/contacts/${id}/reply`, {
+    reply,
+  });
 
-// Lấy tất cả tin nhắn (cho admin)
-export const getAllMessages = async (): Promise<ChatMessage[]> => {
-  const response = await api.get("/messages");
   return response.data;
 };

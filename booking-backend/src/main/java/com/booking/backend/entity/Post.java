@@ -23,10 +23,6 @@ public class Post {
     @Column(columnDefinition = "LONGTEXT")
     private String content;
 
-
     private LocalDateTime createdAt;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
 }

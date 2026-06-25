@@ -1,8 +1,10 @@
 package com.booking.backend.service.impl;
 
 import com.booking.backend.dto.*;
+import com.booking.backend.entity.Doctor;
 import com.booking.backend.entity.User;
 import com.booking.backend.enums.Role;
+import com.booking.backend.repository.DoctorRepository;
 import com.booking.backend.repository.UserRepository;
 import com.booking.backend.security.JwtService;
 import com.booking.backend.service.UserService;
@@ -17,6 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.booking.backend.entity.Doctor;
+import com.booking.backend.repository.DoctorRepository;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,6 +36,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private Cloudinary cloudinary;
+
+    @Autowired
+    private DoctorRepository doctorRepository;
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
@@ -106,8 +113,22 @@ public class UserServiceImpl implements UserService {
                 user.getRole().name());
 
         // 🔥 response đầy đủ
+        Long doctorId = null;
+
+        if (user.getRole() == Role.DOCTOR) {
+
+            Doctor doctor = doctorRepository
+                    .findByUser_Id(user.getId())
+                    .orElse(null);
+
+            if (doctor != null) {
+                doctorId = doctor.getId();
+            }
+        }
+
         return new LoginResponse(
                 user.getId(),
+                doctorId,
                 token,
                 user.getRole().name(),
                 user.getFullName(),
@@ -240,5 +261,4 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy user"));
     }
 
- 
 }

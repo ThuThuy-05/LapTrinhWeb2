@@ -13,10 +13,12 @@ export const login = async (data: any) => {
 
   const token = res.data.token;
   const role = res.data.role;
+  
 
   if (token) {
     localStorage.setItem("token", token);
     localStorage.setItem("role", role);
+    
   }
 
   return res.data;
@@ -32,3 +34,18 @@ export const logout = () => {
   localStorage.removeItem("token");
   localStorage.removeItem("role");
 };
+
+export const updateProfile = async (formData: FormData) => {
+  const res = await api.put("/patient", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res.data;
+};
+
+export const changePassword = async (data: any) => {
+  const res = await api.put("/change-password", data);
+  return res.data;
+};
+

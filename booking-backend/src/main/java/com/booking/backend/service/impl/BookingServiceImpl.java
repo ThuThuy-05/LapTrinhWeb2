@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -60,10 +61,28 @@ public class BookingServiceImpl implements BookingService {
         Schedule schedule = scheduleRepository.findById(request.getScheduleId())
                 .orElseThrow(() -> new RuntimeException("Schedule not found"));
 
+        // =========================
+        // VALIDATE THỜI GIAN (MODERN)
+        // =========================
+        LocalDateTime now = LocalDateTime.now();
+
+        LocalDateTime scheduleEnd = LocalDateTime.of(
+                schedule.getDate(),
+                schedule.getTimeEnd());
+
+        // ❌ CHẶN SLOT ĐÃ KẾT THÚC
+        if (scheduleEnd.isBefore(now)) {
+            throw new RuntimeException("Không thể đặt lịch đã qua");
+        }
+
+        // ❌ CHẶN ĐÃ BOOKED
         if (schedule.getStatus() == ScheduleStatus.BOOKED) {
             throw new RuntimeException("Lịch đã được đặt");
         }
 
+        // =========================
+        // CREATE BOOKING
+        // =========================
         Booking booking = new Booking();
         booking.setUser(user);
         booking.setSchedule(schedule);
@@ -71,9 +90,9 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.PENDING);
         booking.setBookingDate(LocalDate.now());
         booking.setQrCode(UUID.randomUUID().toString());
-
+        booking.setCreatedAt(LocalDateTime.now());
         // =========================
-        // UPLOAD CCCD MẶT TRƯỚC
+        // UPLOAD CCCD FRONT
         // =========================
         if (cccdFront != null && !cccdFront.isEmpty()) {
             try {
@@ -81,8 +100,8 @@ public class BookingServiceImpl implements BookingService {
                         cccdFront.getBytes(),
                         ObjectUtils.emptyMap());
 
-                String frontUrl = uploadResult.get("secure_url").toString();
-                booking.setCccdFrontImage(frontUrl);
+                booking.setCccdFrontImage(
+                        uploadResult.get("secure_url").toString());
 
             } catch (Exception e) {
                 throw new RuntimeException("Upload CCCD mặt trước thất bại");
@@ -90,7 +109,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         // =========================
-        // UPLOAD CCCD MẶT SAU
+        // UPLOAD CCCD BACK
         // =========================
         if (cccdBack != null && !cccdBack.isEmpty()) {
             try {
@@ -98,13 +117,16 @@ public class BookingServiceImpl implements BookingService {
                         cccdBack.getBytes(),
                         ObjectUtils.emptyMap());
 
-                String backUrl = uploadResult.get("secure_url").toString();
-                booking.setCccdBackImage(backUrl);
+                booking.setCccdBackImage(
+                        uploadResult.get("secure_url").toString());
 
             } catch (Exception e) {
                 throw new RuntimeException("Upload CCCD mặt sau thất bại");
             }
         }
+
+        schedule.setStatus(ScheduleStatus.BOOKED);
+        scheduleRepository.save(schedule);
 
         return bookingRepository.save(booking);
     }
@@ -169,4 +191,76 @@ public class BookingServiceImpl implements BookingService {
 
         bookingRepository.deleteById(id);
     }
+
+    @Override
+    public List<Booking> getBookingsByDoctor(Long doctorId) {
+
+        return bookingRepository.findBySchedule_Doctor_Id(doctorId);
+    }
+
+    @Override
+    public Booking updateBookingStatus(
+            Long bookingId,
+            BookingStatus status,
+            String diagnosis,
+            String prescription,
+            String doctorNote) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        booking.setStatus(status);
+
+        // 👉 CHỈ LƯU KHI COMPLETED
+        if (status == BookingStatus.COMPLETED) {
+            booking.setDiagnosis(diagnosis);
+            booking.setPrescription(prescription);
+            booking.setDoctorNote(doctorNote);
+        }
+
+        return bookingRepository.save(booking);
+    }
+
+    @Override
+    public Booking cancelBooking(Long bookingId) {
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Không cho hủy nếu đã hoàn thành
+        if (booking.getStatus() == BookingStatus.COMPLETED) {
+            throw new RuntimeException(
+                    "Không thể hủy lịch đã hoàn thành");
+        }
+
+        // Không cho hủy lần 2
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new RuntimeException(
+                    "Lịch đã được hủy trước đó");
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+
+        // Mở lại slot để người khác đặt
+        Schedule schedule = booking.getSchedule();
+
+        if (schedule != null) {
+            schedule.setStatus(ScheduleStatus.AVAILABLE);
+            scheduleRepository.save(schedule);
+        }
+
+        return bookingRepository.save(booking);
+    }
+    // @Override
+    // public Booking updateBookingStatus(
+    // Long bookingId,
+    // BookingStatus status) {
+
+    // Booking booking = bookingRepository.findById(bookingId)
+    // .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+    // booking.setStatus(status);
+
+    // return bookingRepository.save(booking);
+    // }
 }

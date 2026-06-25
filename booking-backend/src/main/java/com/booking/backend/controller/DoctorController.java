@@ -19,6 +19,8 @@ import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import com.booking.backend.dto.DoctorProfileRequest;
 
 @RestController
 @RequestMapping("/api")
@@ -321,4 +323,74 @@ public class DoctorController {
                                         .body(Map.of("error", e.getMessage()));
                 }
         }
+
+        @PutMapping(value = "/doctor/me", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+        public Doctor updateMyProfile(
+
+                        Authentication authentication,
+
+                        @RequestParam(required = false) MultipartFile file,
+
+                        @RequestParam String firstName,
+
+                        @RequestParam String lastName,
+
+                        @RequestParam String email,
+
+                        @RequestParam String phone,
+
+                        @RequestParam String gender,
+
+                        @RequestParam String dateOfBirth,
+
+                        @RequestParam String address,
+
+                        @RequestParam(required = false) String degree,
+
+                        @RequestParam(required = false) Integer experience,
+
+                        @RequestParam(required = false) String description
+
+        ) {
+
+                DoctorProfileRequest request = new DoctorProfileRequest();
+
+                request.setFirstName(firstName);
+
+                request.setLastName(lastName);
+
+                request.setEmail(email);
+
+                request.setPhone(phone);
+
+                request.setGender(
+                                Gender.valueOf(gender));
+
+                request.setDateOfBirth(
+                                LocalDate.parse(dateOfBirth));
+
+                request.setAddress(address);
+
+                request.setDegree(degree);
+
+                request.setExperience(experience);
+
+                request.setDescription(description);
+
+                // upload avatar cloudinary
+                if (file != null && !file.isEmpty()) {
+
+                        String avatar = uploadToCloudinary(file);
+
+                        request.setAvatar(avatar);
+                }
+
+                String phoneLogin = authentication.getName();
+
+                return doctorService.updateMyProfile(
+                                phoneLogin,
+                                request);
+        }
+
+        
 }

@@ -11,6 +11,7 @@ public class BranchRequest {
 
     private String name;
 
+    private String address;
 
     private Boolean active;
 }

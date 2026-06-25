@@ -16,4 +16,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByUser_IdAndDoctor_Id(Long userId, Long doctorId);
 
     List<Review> findByDoctorIdAndIsHiddenFalse(Long doctorId);
+
+    List<Review> findTop5ByOrderByCreatedAtDesc();
 }

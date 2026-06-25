@@ -1,115 +1,3 @@
-// import api from "@/lib/api";
-
-// // =========================
-// // TYPE
-// // =========================
-
-// export type Schedule = {
-//   id: number;
-
-//   date: string; // backend yyyy-MM-dd
-
-//   timeStart: string; // HH:mm:ss
-//   timeEnd: string; // HH:mm:ss
-
-//   status: "AVAILABLE" | "BOOKED" | "CANCELLED";
-
-//   doctorId: number;
-
-//   roomId?: number;
-
-//   room?: {
-//     name: string;
-//     location: string;
-//   };
-// };
-
-// // =========================
-// // FORMAT DATE (VN DISPLAY)
-// // =========================
-
-// export const formatScheduleDate = (date: string) => {
-//   if (!date) return "";
-
-//   const d = new Date(date);
-
-//   const day = String(d.getDate()).padStart(2, "0");
-//   const month = String(d.getMonth() + 1).padStart(2, "0");
-//   const year = d.getFullYear();
-
-//   return `${day}-${month}-${year}`;
-// };
-
-// // =========================
-// // FORMAT TIME
-// // =========================
-
-// export const formatTime = (time: string) => {
-//   if (!time) return "";
-//   return time.substring(0, 5); // 08:00:00 -> 08:00
-// };
-
-// // =========================
-// // GET ALL
-// // =========================
-
-// export const getAllSchedules = async (): Promise<Schedule[]> => {
-//   const res = await api.get("/schedules");
-//   return res.data;
-// };
-
-// // =========================
-// // GET BY DOCTOR (FIXED)
-// // =========================
-
-// export const getSchedulesByDoctorId = async (
-//   doctorId: string | number,
-// ): Promise<Schedule[]> => {
-//   const res = await api.get("/schedules", {
-//     params: {
-//       doctorId: doctorId, // ✔ FIX
-//       status: "AVAILABLE", // chỉ lịch trống
-//     },
-//   });
-
-//   return res.data;
-// };
-
-// // =========================
-// // CREATE
-// // =========================
-
-// export const createSchedule = async (data: any): Promise<Schedule> => {
-//   const res = await api.post("/admin/schedules", data);
-//   return res.data;
-// };
-
-// // =========================
-// // UPDATE
-// // =========================
-
-// export const updateSchedule = async (
-//   id: number | string,
-//   data: any,
-// ): Promise<Schedule> => {
-//   const res = await api.put(`/admin/schedules/${id}`, data);
-//   return res.data;
-// };
-
-// // =========================
-// // DELETE
-// // =========================
-
-// export const deleteSchedule = async (id: number | string): Promise<void> => {
-//   await api.delete(`/admin/schedules/${id}`);
-// };
-
-// services/scheduleService.ts - Bản sửa hoàn chỉnh
-
-// services/scheduleService.ts
-// services/scheduleService.ts
-
-// services/scheduleService.ts
 
 // services/scheduleService.ts
 
@@ -299,4 +187,12 @@ export const updateSchedule = async (
 
 export const deleteSchedule = async (id: number | string): Promise<void> => {
   await api.delete(`/admin/schedules/${id}`);
+};
+
+export const getSchedulesByDoctor = async (
+  doctorId: number,
+): Promise<Schedule[]> => {
+  const res = await api.get(`/doctor/schedules/${doctorId}`);
+
+  return res.data;
 };

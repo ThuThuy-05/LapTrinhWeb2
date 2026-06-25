@@ -89,10 +89,12 @@ public class SecurityConfig {
                                                                 "/api/rooms/**")
                                                 .permitAll()
                                                 .requestMatchers("/api/payments/**").permitAll()
+                                                .requestMatchers("/api/payment/**").permitAll()
                                                 // 🔐 Phân quyền
                                                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                                                 .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
                                                 .requestMatchers("/api/patient/**").hasRole("PATIENT")
+                                                .requestMatchers("/sepay-webhook").permitAll()
 
                                                 // 🔒 còn lại phải login
                                                 .anyRequest().authenticated())

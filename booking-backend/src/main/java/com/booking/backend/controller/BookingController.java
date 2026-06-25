@@ -1,7 +1,9 @@
 package com.booking.backend.controller;
 
 import com.booking.backend.dto.BookingRequest;
+import com.booking.backend.dto.BookingStatusRequest;
 import com.booking.backend.entity.Booking;
+import com.booking.backend.enums.BookingStatus;
 import com.booking.backend.service.BookingService;
 
 import org.springframework.http.HttpStatus;
@@ -89,5 +91,53 @@ public class BookingController {
     public ResponseEntity<String> deleteBooking(@PathVariable Long id) {
         bookingService.deleteBooking(id);
         return ResponseEntity.ok("Xóa lịch hẹn thành công");
+    }
+
+    // =========================
+    // GET BOOKINGS BY DOCTOR
+    // =========================
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<Booking>> getBookingsByDoctor(
+            @PathVariable Long doctorId) {
+
+        return ResponseEntity.ok(
+                bookingService.getBookingsByDoctor(doctorId));
+    }
+
+    @PutMapping("doctor/{id}/status")
+    public ResponseEntity<Booking> updateBookingStatus(
+            @PathVariable Long id,
+            @RequestBody BookingStatusRequest request) {
+
+        Booking booking = bookingService.updateBookingStatus(
+                id,
+                BookingStatus.valueOf(request.getStatus()),
+                request.getDiagnosis(),
+                request.getPrescription(),
+                request.getDoctorNote());
+
+        return ResponseEntity.ok(booking);
+    }
+    // @PutMapping("doctor/{id}/status")
+    // public ResponseEntity<Booking> updateBookingStatus(
+    // @PathVariable Long id,
+    // @RequestBody BookingStatusRequest request) {
+
+    // Booking booking = bookingService.updateBookingStatus(
+    // id,
+    // BookingStatus.valueOf(request.getStatus()));
+
+    // return ResponseEntity.ok(booking);
+    // }
+
+    // =========================
+    // CANCEL BOOKING
+    // =========================
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<Booking> cancelBooking(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                bookingService.cancelBooking(id));
     }
 }

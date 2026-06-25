@@ -26,18 +26,21 @@ public class Booking {
     @JoinColumn(name = "schedule_id")
     private Schedule schedule;
 
-    // // THÔNG TIN BỆNH NHÂN
-    // private String patientName;
-
-    // private String patientPhone;
-
-    // private Integer patientAge;
-
-    // private String patientGender;
-
     // TRIỆU CHỨNG
     @Column(columnDefinition = "TEXT")
     private String symptom;
+
+    // CHẨN ĐOÁN
+    @Column(columnDefinition = "TEXT")
+    private String diagnosis;
+
+    // ĐƠN THUỐC
+    @Column(columnDefinition = "TEXT")
+    private String prescription;
+
+    // GHI CHÚ BÁC SĨ
+    @Column(columnDefinition = "TEXT")
+    private String doctorNote;
 
     // TRẠNG THÁI
     @Enumerated(EnumType.STRING)
@@ -50,12 +53,12 @@ public class Booking {
     private String qrCode;
 
     // ẢNH CCCD
-    @Column(name = "citizen_card_image")
-    private String citizenCardImage;
+
     private String cccdFrontImage;
 
     private String cccdBackImage;
 
     // CREATED
     private LocalDateTime createdAt = LocalDateTime.now();
+
 }

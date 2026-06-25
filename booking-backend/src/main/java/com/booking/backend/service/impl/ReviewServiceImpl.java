@@ -147,14 +147,21 @@ public class ReviewServiceImpl implements ReviewService {
         ReviewResponse res = new ReviewResponse();
 
         res.setId(review.getId());
+
         res.setUserId(review.getUser().getId());
+
+        if (review.getDoctor() != null) {
+            res.setDoctorId(review.getDoctor().getId());
+        }
+
         res.setUserName(
                 review.getUser().getLastName()
                         + " "
                         + review.getUser().getFirstName());
 
-        // doctorName
-        if (review.getDoctor() != null && review.getDoctor().getUser() != null) {
+        if (review.getDoctor() != null &&
+                review.getDoctor().getUser() != null) {
+
             res.setDoctorName(
                     review.getDoctor().getUser().getLastName()
                             + " "
@@ -164,8 +171,16 @@ public class ReviewServiceImpl implements ReviewService {
         res.setRating(review.getRating());
         res.setComment(review.getComment());
         res.setCreatedAt(review.getCreatedAt());
-        res.setIsHidden(review.getIsHidden()); // ✅ THÊM DÒNG NÀY
+        res.setIsHidden(review.getIsHidden());
 
         return res;
+    }
+
+    @Override
+    public List<ReviewResponse> getAllReviews() {
+        return reviewRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 }

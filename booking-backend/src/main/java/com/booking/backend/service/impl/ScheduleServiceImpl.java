@@ -323,4 +323,13 @@ public class ScheduleServiceImpl implements ScheduleService {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getSchedulesByDateRange'");
     }
+
+    @Override
+    public List<Schedule> getSchedulesByDoctor(Long doctorId) {
+
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        return scheduleRepository.findByDoctor_Id(doctor.getId());
+    }
 }

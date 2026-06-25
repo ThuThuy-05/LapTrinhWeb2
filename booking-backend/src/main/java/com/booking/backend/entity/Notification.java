@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Data
 @Entity
@@ -15,6 +16,7 @@ public class Notification {
     private Long id;
 
     // 👉 Người nhận thông báo
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,4 +36,7 @@ public class Notification {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @Column(name = "contact_id")
+    private Long contactId;
 }

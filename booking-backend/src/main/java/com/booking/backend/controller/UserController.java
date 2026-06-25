@@ -33,7 +33,7 @@ public class UserController {
     // =========================
     // USER ĐỔI MẬT KHẨU
     // =========================
-    @PutMapping("patient/change-password")
+    @PutMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
         userService.changePassword(request);
         return ResponseEntity.ok("Đổi mật khẩu thành công");

@@ -297,7 +297,6 @@ export default function BookingPage() {
 
   const handleBooking = async () => {
     if (!userProfile) {
-      alert("Vui lòng đăng nhập để đặt lịch khám!");
       router.push("/login");
       return;
     }
@@ -307,45 +306,46 @@ export default function BookingPage() {
       return;
     }
 
+    // =========================
+    // CHECK QUÁ KHỨ (CHUẨN NGHIỆP VỤ)
+    // =========================
+    const scheduleDateTime = new Date(
+      `${selectedSchedule.date}T${selectedSchedule.timeStart}`,
+    );
+
+    if (scheduleDateTime < new Date()) {
+      alert("Không thể đặt lịch trong quá khứ!");
+      return;
+    }
+
     if (!symptom.trim()) {
       alert("Vui lòng nhập lý do khám!");
       return;
     }
 
     if (!cccdFront || !cccdBack) {
-      alert("Vui lòng tải lên đầy đủ CCCD mặt trước và mặt sau!");
+      alert("Vui lòng tải CCCD mặt trước và mặt sau!");
       return;
     }
 
     try {
       const formData = new FormData();
 
-      formData.append("userId", String(userProfile?.id));
+      formData.append("userId", String(userProfile.id));
       formData.append("scheduleId", String(selectedSchedule.id));
-      formData.append(
-        "price",
-        String(selectedDoctor?.specialty?.price || selectedDoctor?.price || 0),
-      );
       formData.append("symptom", symptom);
-      formData.append("address", userProfile?.address || "");
-
       formData.append("cccdFront", cccdFront);
       formData.append("cccdBack", cccdBack);
 
-      const res = await api.post("/bookings", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const res = await api.post("/bookings", formData);
 
-      const bookingId = res.data.id || res.data.booking?.id;
-
+      const bookingId = res.data.id;
       if (!bookingId) throw new Error("Không lấy được bookingId");
 
       router.push(`/payment/${bookingId}`);
     } catch (err: any) {
       console.error(err);
-      alert(err.response?.data?.message || "Gặp lỗi trong quá trình đặt lịch!");
+      alert(err.response?.data?.message || "Đặt lịch thất bại!");
     }
   };
 
@@ -787,20 +787,27 @@ export default function BookingPage() {
                     {filteredSchedulesByDate.map((s) => {
                       const isBooked = s.status === "BOOKED";
                       const isSelected = selectedSchedule?.id === s.id;
-
+                      const scheduleDateTime = new Date(
+                        `${s.date}T${s.timeStart}`,
+                      );
+                      const isPast = scheduleDateTime < new Date();
                       return (
                         <button
                           key={s.id}
                           type="button"
-                          disabled={isBooked}
+                          disabled={isBooked || isPast}
                           onClick={() => setSelectedSchedule(s)}
-                          className={`p-5 rounded-xl border-2 transition-all text-left relative overflow-hidden font-['Times_New_Roman',serif] ${
-                            isBooked
-                              ? "border-slate-200 bg-slate-100 opacity-60 cursor-not-allowed"
-                              : isSelected
-                                ? "border-blue-500 bg-gradient-to-r from-blue-50 to-cyan-50 shadow-lg"
-                                : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-md"
-                          }`}
+                          className={`p-5 rounded-xl border-2 transition-all text-left relative overflow-hidden font-['Times_New_Roman',serif] 
+    ${
+      isPast
+        ? "opacity-40 cursor-not-allowed bg-slate-100 border-slate-200"
+        : isBooked
+          ? "border-slate-200 bg-slate-100 opacity-60 cursor-not-allowed"
+          : isSelected
+            ? "border-blue-500 bg-gradient-to-r from-blue-50 to-cyan-50 shadow-lg"
+            : "border-slate-200 bg-white hover:border-blue-300 hover:shadow-md"
+    }
+  `}
                         >
                           {isSelected && (
                             <div className="absolute top-2 right-2">

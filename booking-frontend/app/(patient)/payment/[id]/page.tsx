@@ -113,14 +113,20 @@ export default function PaymentPage() {
         return;
       }
 
-      if (method === "MOMO") {
-        setErrorMessage(
-          "Cổng thanh toán MoMo hiện đang bảo trì. Vui lòng chọn phương thức khác.",
-        );
-        setIsProcessing(false);
+      if (method === "BANK_QR") {
+        if (isProcessing) return;
+
+        setIsProcessing(true);
+
+        await createPayment({
+          bookingId: id,
+          amount: finalPrice,
+          method: "BANK_QR",
+        });
+
+        router.push(`/payment/qr/${id}?amount=${finalPrice}`);
         return;
       }
-
       const response = await createPayment({
         bookingId: id,
         amount: finalPrice,
@@ -287,7 +293,7 @@ export default function PaymentPage() {
                       Triệu chứng lâm sàng
                     </p>
                     <p className="text-xs text-slate-700 italic leading-relaxed font-['Times_New_Roman',serif]">
-                      <p className="text-sm">{booking?.symptom}</p>{" "}
+                      {booking?.symptom}
                     </p>
                   </div>
                 )}
@@ -399,12 +405,13 @@ export default function PaymentPage() {
                       icon: <Landmark size={20} />,
                       color: "blue",
                     },
+                   
                     {
-                      id: "MOMO",
-                      name: "MOMO",
-                      fullname: "Ví điện tử MoMo",
-                      icon: <Smartphone size={20} />,
-                      color: "purple",
+                      id: "BANK_QR",
+                      name: "QR Banking",
+                      fullname: "Quét mã chuyển khoản",
+                      icon: <Landmark size={20} />,
+                      color: "green",
                     },
                   ].map((item) => (
                     <button

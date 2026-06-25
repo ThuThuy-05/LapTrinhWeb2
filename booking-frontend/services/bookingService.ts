@@ -4,6 +4,11 @@ import api from "@/lib/api";
 export type Booking = {
   id: number;
   symptom: string;
+
+  diagnosis?: string;
+  prescription?: string;
+  doctorNote?: string;
+
   status: string;
   bookingDate: string;
   qrCode: string;
@@ -105,12 +110,57 @@ export const createBooking = async (data: {
   return response.data;
 };
 
+export const getPatientsByDoctor = async (doctorId: number) => {
+  const response = await api.get(`/bookings/doctor/${doctorId}`);
+  return response.data;
+};
 // Lấy booking của user
+// export const getMyBookings = async (userId: string | number) => {
+//   const response = await api.get<Booking[]>(`/bookings/my-bookings/${userId}`);
+//   return response.data;
+// };
 export const getMyBookings = async (userId: string | number) => {
-  const response = await api.get<Booking[]>(`/bookings/my-bookings/${userId}`);
+  const response = await api.get<Booking[]>(`/bookings/user/${userId}`);
   return response.data;
 };
 
+// Lấy danh sách bệnh nhân đặt lịch theo bác sĩ
+export const getBookingsByDoctor = async (doctorId: string | number) => {
+  const response = await api.get<Booking[]>(`/bookings/doctor/${doctorId}`);
+
+  return response.data;
+};
+
+// 🔥 THÊM MỚI: Bác sĩ cập nhật trạng thái booking (không cần quyền Admin)
+export const updateBookingStatusByDoctor = async (
+  id: number,
+  data: {
+    status: string;
+    diagnosis?: string;
+    prescription?: string;
+    doctorNote?: string;
+  },
+) => {
+  const response = await api.put(`/bookings/doctor/${id}/status`, data);
+
+  return response.data;
+};
+
+// =========================
+// BỆNH NHÂN HỦY LỊCH
+// =========================
+// Bệnh nhân hủy lịch
+export const cancelBookingByPatient = async (id: number) => {
+  const response = await api.put(`/bookings/${id}/cancel`);
+  return response.data;
+};
+// Bác sĩ đánh dấu hoàn thành
+// export const completeBookingByDoctor = async (bookingId: number) => {
+//   const response = await api.put(`/bookings/${bookingId}`, {
+//     status: "COMPLETED",
+//   });
+//   return response.data;
+// };
 // // services/bookingService.ts
 // import api from "@/lib/api";
 

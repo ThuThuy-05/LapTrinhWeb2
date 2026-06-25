@@ -49,4 +49,6 @@ public interface ScheduleService {
     Schedule getScheduleById(Long id);
 
     void deleteSchedule(Long id);
+
+    List<Schedule> getSchedulesByDoctor(Long doctorId);
 }

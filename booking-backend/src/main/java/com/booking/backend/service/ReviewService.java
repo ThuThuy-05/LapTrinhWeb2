@@ -29,4 +29,6 @@ public interface ReviewService {
         // ReviewResponse mapToResponse(Review saved);
         ReviewResponse mapToResponse(Review review);
 
+        List<ReviewResponse> getAllReviews();
+
 }

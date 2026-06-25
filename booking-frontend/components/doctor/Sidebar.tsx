@@ -18,9 +18,7 @@ const doctorMenuItems = [
   { name: "Lịch trực cá nhân", href: "/doctor/schedules", icon: CalendarRange },
   { name: "Danh sách đặt lịch", href: "/doctor/bookings", icon: ClipboardList },
   { name: "Bệnh nhân của tôi", href: "/doctor/patients", icon: Users },
-  { name: "Tư vấn/Phản hồi", href: "/doctor/reviews", icon: MessageSquare },
   { name: "Hồ sơ cá nhân", href: "/doctor/profile", icon: UserCircle },
-  { name: "Cài đặt", href: "/doctor/settings", icon: Settings },
 ];
 
 export default function Sidebar() {

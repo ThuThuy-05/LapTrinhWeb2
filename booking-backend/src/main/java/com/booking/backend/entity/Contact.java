@@ -6,6 +6,8 @@ import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 @Data
 @Entity
 @Table(name = "contacts")
@@ -16,19 +18,31 @@ public class Contact {
     private Long id;
 
     private String name;
+
     private String email;
+
     private String phone;
+
     private String subject;
 
     @Column(columnDefinition = "TEXT")
     private String message;
 
-    // LIVE = có người trực, BOT = ngoài giờ, DONE = đã xử lý
+    // PENDING | DONE
     private String status;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
+    
+    @Column(columnDefinition = "TEXT")
+    private String adminReply;
+
+    private LocalDateTime replyAt;
 
     private LocalDateTime createdAt;
 
-    // Thêm vào trong Contact.java
     @OneToMany(mappedBy = "contact", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Message> messages;
 }

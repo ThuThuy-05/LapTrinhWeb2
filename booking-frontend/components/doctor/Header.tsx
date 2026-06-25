@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { LogOut, Bell, ShieldCheck, Sparkles, Clock, Activity } from "lucide-react";
+import {
+  LogOut,
+  Bell,
+  ShieldCheck,
+  Sparkles,
+  Clock,
+  Activity,
+} from "lucide-react";
 import { getProfile } from "@/services/authService";
 
 export default function Header() {
@@ -14,7 +21,9 @@ export default function Header() {
       try {
         const data = await getProfile();
         setUser(data);
-      } catch (error) { console.log("Error:", error); }
+      } catch (error) {
+        console.log("Error:", error);
+      }
     };
     fetchProfile();
   }, []);
@@ -63,7 +72,7 @@ export default function Header() {
               </span>
             </div>
             <span className="text-lg font-black text-white tracking-tight uppercase">
-              BS. {user?.firstName || "Huyền Hoàng"}
+              BS. {user?.lastName || ""}
             </span>
           </div>
 
@@ -76,7 +85,11 @@ export default function Header() {
             onClick={handleLogout}
             className="group w-12 h-12 bg-rose-500/10 border border-rose-500/20 text-rose-500 rounded-2xl transition-all hover:bg-rose-600 hover:text-white hover:shadow-[0_0_15px_rgba(225,29,72,0.4)]"
           >
-            <LogOut size={20} strokeWidth={2.5} className="mx-auto group-hover:-translate-x-0.5 transition-transform" />
+            <LogOut
+              size={20}
+              strokeWidth={2.5}
+              className="mx-auto group-hover:-translate-x-0.5 transition-transform"
+            />
           </button>
         </div>
       </div>

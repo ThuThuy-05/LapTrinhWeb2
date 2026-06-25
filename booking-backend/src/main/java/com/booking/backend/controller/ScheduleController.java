@@ -125,4 +125,12 @@ public class ScheduleController {
     public void delete(@PathVariable Long id) {
         scheduleService.deleteSchedule(id);
     }
+
+    // 👉 GET SCHEDULE BY DOCTOR
+    @GetMapping("/doctor/schedules/{doctorId}")
+    public List<Schedule> getSchedulesByDoctor(
+            @PathVariable Long doctorId) {
+
+        return scheduleService.getSchedulesByDoctor(doctorId);
+    }
 }

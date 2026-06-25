@@ -212,3 +212,19 @@ export const adminShowReview = async (reviewId: number): Promise<Review> => {
     throw error;
   }
 };
+
+export const getAllReviews = async (): Promise<Review[]> => {
+  const response = await api.get("/reviews/admin/reviews");
+
+  return response.data.map((review: any) => ({
+    id: review.id,
+    userId: review.userId,
+    doctorId: review.doctorId,
+    patientName: review.userName || `User ${review.userId}`,
+    doctorName: review.doctorName,
+    rating: review.rating,
+    comment: review.comment,
+    createdAt: review.createdAt,
+    isHidden: review.isHidden ?? false,
+  }));
+};

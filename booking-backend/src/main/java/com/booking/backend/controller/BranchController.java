@@ -6,7 +6,12 @@ package com.booking.backend.controller;
 
 import com.booking.backend.dto.BranchRequest;
 import com.booking.backend.entity.Branch;
+import com.booking.backend.entity.Doctor;
+import com.booking.backend.repository.DoctorRepository;
 import com.booking.backend.service.BranchService;
+import com.booking.backend.service.DoctorService;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +23,17 @@ public class BranchController {
 
     private final BranchService branchService;
 
+    private final DoctorService doctorService;
+
+    private final DoctorRepository doctorRepository;
+
     public BranchController(
-            BranchService branchService) {
+            BranchService branchService,
+            DoctorService doctorService,
+            DoctorRepository doctorRepository) {
         this.branchService = branchService;
+        this.doctorService = doctorService;
+        this.doctorRepository = doctorRepository;
     }
 
     // =========================
@@ -77,4 +90,13 @@ public class BranchController {
 
         branchService.deleteBranch(id);
     }
+
+    @GetMapping("/branches/{branchId}/doctors")
+    public ResponseEntity<List<Doctor>> getDoctorsByBranch(
+            @PathVariable Long branchId) {
+
+        return ResponseEntity.ok(
+                doctorService.getDoctorsByBranch(branchId));
+    }
+
 }

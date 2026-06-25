@@ -61,8 +61,9 @@ public class BranchServiceImpl
 
                 Branch branch = new Branch();
 
-                branch.setName(
-                                request.getName());
+                branch.setName(request.getName());
+
+                branch.setAddress(request.getAddress());
 
                 branch.setActive(
                                 request.getActive() != null
@@ -81,16 +82,20 @@ public class BranchServiceImpl
                         Long id,
                         BranchRequest request) {
 
-                if (branchRepository.existsByName(
-                                request.getName())) {
-
-                        throw new RuntimeException(
-                                        "Tên chi nhánh đã tồn tại");
-                }
                 Branch branch = getBranchById(id);
+
+                branchRepository.findByName(request.getName())
+                                .ifPresent(existing -> {
+                                        if (!existing.getId().equals(id)) {
+                                                throw new RuntimeException("Tên chi nhánh đã tồn tại");
+                                        }
+                                });
 
                 branch.setName(
                                 request.getName());
+
+                branch.setAddress(
+                                request.getAddress());
 
                 if (request.getActive() != null) {
 

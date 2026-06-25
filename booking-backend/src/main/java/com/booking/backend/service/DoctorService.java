@@ -1,7 +1,9 @@
 package com.booking.backend.service;
 
+import com.booking.backend.dto.DoctorProfileRequest;
 import com.booking.backend.dto.DoctorRequest;
 import com.booking.backend.entity.Doctor;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -28,5 +30,11 @@ public interface DoctorService {
     Map<String, Object> importFromExcel(MultipartFile file);
 
     int importDoctors(List<DoctorRequest> doctorRequests);
-    
+
+    Doctor updateMyProfile(
+            String phone,
+            DoctorProfileRequest request);
+
+    List<Doctor> getDoctorsByBranch(Long branchId);
+
 }

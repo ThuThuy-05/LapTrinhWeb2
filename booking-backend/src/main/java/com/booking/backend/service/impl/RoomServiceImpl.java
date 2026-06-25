@@ -35,8 +35,7 @@ public class RoomServiceImpl implements RoomService {
     public Room findById(Long id) {
 
         return roomRepository.findById(id)
-                .orElseThrow(() ->
-                        new RuntimeException("Room not found"));
+                .orElseThrow(() -> new RuntimeException("Room not found"));
     }
 
     // =========================
@@ -69,11 +68,11 @@ public class RoomServiceImpl implements RoomService {
 
         oldRoom.setLocation(room.getLocation());
 
+        oldRoom.setBranch(room.getBranch());
         oldRoom.setActive(room.getActive());
 
         return roomRepository.save(oldRoom);
     }
-
     // =========================
     // DELETE
     // =========================
