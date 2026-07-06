@@ -104,10 +104,10 @@ export default function LoginPage() {
                 <LogIn className="w-10 h-10 text-white" />
               </div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                Welcome Back
+                Đăng nhập
               </h1>
               <p className="text-gray-500 mt-2">
-                Sign in to continue your journey
+                Đăng nhập để tiếp tục sử dụng hệ thống
               </p>
             </div>
 
@@ -134,7 +134,7 @@ export default function LoginPage() {
                 <input
                   name="phone"
                   type="tel"
-                  placeholder="Phone number"
+                  placeholder="Số điện thoại"
                   value={form.phone}
                   onChange={handleChange}
                   className="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
@@ -151,7 +151,7 @@ export default function LoginPage() {
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="Mật khẩu"
                   value={form.password}
                   onChange={handleChange}
                   className="w-full pl-9 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all placeholder:text-gray-400"
@@ -173,7 +173,7 @@ export default function LoginPage() {
                   href="/forgot-password"
                   className="text-sm text-blue-600 hover:text-blue-700 hover:underline transition-colors"
                 >
-                  Forgot password?
+                  Quên mật khẩu?
                 </a>
               </div>
 
@@ -187,10 +187,10 @@ export default function LoginPage() {
                   {isLoading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Signing in...
+                      Đang đăng nhập...
                     </div>
                   ) : (
-                    "Sign In"
+                    "Đăng nhập"
                   )}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -210,21 +210,16 @@ export default function LoginPage() {
             {/* Register Link */}
             <p className="text-center text-sm text-gray-600">
               {" "}
-              have an account?{" "}
+              Chưa có tài khoản?{" "}
               <a
                 href="/register"
                 className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
               >
-                Create Account
+                Tạo Tài Khoản
               </a>
             </p>
           </div>
         </div>
-
-        {/* Footer Note */}
-        <p className="text-center text-xs text-gray-500 mt-6">
-          Secure login with 256-bit encryption
-        </p>
       </div>
     </div>
   );

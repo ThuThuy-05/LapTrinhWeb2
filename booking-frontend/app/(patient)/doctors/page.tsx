@@ -3,7 +3,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getAllDoctors, Doctor } from "@/services/doctorService";
+import {
+  getAllDoctors,
+  Doctor,
+  getDoctorsAvailableByDate,
+} from "@/services/doctorService";
 import { getAllSpecialties, Specialty } from "@/services/specialtyService";
 import { getAllBranches, Branch } from "@/services/branchService";
 import DoctorHeader from "./components/DoctorHeader";
@@ -17,6 +21,7 @@ export default function DoctorPage() {
 
   const specialtyIdFromUrl = searchParams.get("specialtyId");
   const specialtyNameFromUrl = searchParams.get("specialtyName");
+  const selectedDate = searchParams.get("date");
 
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [specialties, setSpecialties] = useState<Specialty[]>([]);
@@ -31,8 +36,12 @@ export default function DoctorPage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const doctorPromise = selectedDate
+          ? getDoctorsAvailableByDate(selectedDate)
+          : getAllDoctors();
+
         const [doctorData, specialtyData, branchData] = await Promise.all([
-          getAllDoctors(),
+          doctorPromise,
           getAllSpecialties(),
           getAllBranches(),
         ]);
@@ -48,7 +57,7 @@ export default function DoctorPage() {
     };
 
     fetchData();
-  }, []);
+  }, [selectedDate]);
 
   const filteredDoctors = useMemo(() => {
     return doctors.filter((doctor) => {
@@ -102,15 +111,33 @@ export default function DoctorPage() {
     router.push(`/booking/${doctorId}`);
   };
 
+  const formatDateVN = (date: string | null) => {
+    if (!date) return "";
+
+    const d = new Date(date);
+
+    return d.toLocaleDateString("vi-VN", {
+      weekday: "long",
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30">
       <DoctorHeader
         title={
-          specialtyNameFromUrl
-            ? `Bác sĩ - ${decodeURIComponent(specialtyNameFromUrl)}`
-            : "Đội ngũ bác sĩ"
+          selectedDate
+            ? "Bác sĩ còn lịch khám"
+            : specialtyNameFromUrl
+              ? `Bác sĩ - ${decodeURIComponent(specialtyNameFromUrl)}`
+              : "Đội ngũ bác sĩ"
         }
-        subtitle="Chọn bác sĩ phù hợp với bạn để đặt lịch khám"
+        subtitle={
+          selectedDate
+            ? `Ngày ${formatDateVN(selectedDate)}`
+            : "Chọn bác sĩ phù hợp với bạn để đặt lịch khám"
+        }
       />
 
       <div className="max-w-7xl mx-auto px-6 py-8">

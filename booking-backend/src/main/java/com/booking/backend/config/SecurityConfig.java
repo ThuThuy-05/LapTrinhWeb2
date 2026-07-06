@@ -76,6 +76,7 @@ public class SecurityConfig {
                                                                 "/api/auth/register")
                                                 .permitAll()
 
+                                                .requestMatchers("/api/chat/**").permitAll()
                                                 // =========================
                                                 // PUBLIC APIs
                                                 // =========================
@@ -86,7 +87,8 @@ public class SecurityConfig {
                                                                 "/api/branches/**",
                                                                 "/api/schedules/**",
                                                                 "/api/posts/**",
-                                                                "/api/rooms/**")
+                                                                "/api/rooms/**",
+                                                                "/api/reviews/**")
                                                 .permitAll()
                                                 .requestMatchers("/api/payments/**").permitAll()
                                                 .requestMatchers("/api/payment/**").permitAll()

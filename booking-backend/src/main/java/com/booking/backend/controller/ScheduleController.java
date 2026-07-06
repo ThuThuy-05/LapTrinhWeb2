@@ -59,6 +59,7 @@
 package com.booking.backend.controller;
 
 import com.booking.backend.dto.ScheduleRequest;
+import com.booking.backend.entity.Doctor;
 import com.booking.backend.entity.Schedule;
 import com.booking.backend.enums.ScheduleStatus;
 import com.booking.backend.service.ScheduleService;
@@ -130,7 +131,14 @@ public class ScheduleController {
     @GetMapping("/doctor/schedules/{doctorId}")
     public List<Schedule> getSchedulesByDoctor(
             @PathVariable Long doctorId) {
-
+                
         return scheduleService.getSchedulesByDoctor(doctorId);
+    }
+
+    @GetMapping("/doctors/available")
+    public List<Doctor> getDoctorsAvailable(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+
+        return scheduleService.getDoctorsAvailableByDate(date);
     }
 }

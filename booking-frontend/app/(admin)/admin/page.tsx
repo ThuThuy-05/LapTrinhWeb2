@@ -522,7 +522,7 @@ export default function AdminDashboardPage() {
 
         {/* Footer */}
         <div className="mt-8 text-center text-xs text-slate-400 border-t border-slate-200 pt-6">
-          <p>© 2024 3T Hospital - Hệ thống quản lý đặt lịch khám bệnh</p>
+          <p>© 2026 3T Hospital - Hệ thống quản lý đặt lịch khám bệnh</p>
           <p className="mt-1">
             Cập nhật lần cuối: {new Date().toLocaleString("vi-VN")}
           </p>

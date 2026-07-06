@@ -162,3 +162,52 @@ main {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.react-datepicker {
+    border: none !important;
+    border-radius: 18px !important;
+    overflow: hidden;
+    box-shadow: 0 15px 40px rgba(0,0,0,.18);
+    font-family: inherit;
+}
+
+.react-datepicker__header{
+    background: linear-gradient(135deg,#0ea5e9,#2563eb);
+    border: none;
+}
+
+.react-datepicker__current-month,
+.react-datepicker-time__header,
+.react-datepicker-year-header{
+    color:#fff;
+    font-weight:700;
+}
+
+.react-datepicker__day-name{
+    color:#fff;
+}
+
+.react-datepicker__day--selected{
+    background:#2563eb !important;
+    border-radius:50%;
+}
+
+.react-datepicker__day:hover{
+    background:#bae6fd;
+    border-radius:50%;
+}
+
+.react-datepicker__navigation-icon::before{
+    border-color:white;
+}
+
+.react-datepicker__triangle{
+    display:none;
+}
+.react-datepicker__calendar-icon-right {
+  right: 16px !important;
+  left: auto !important;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #0ea5e9;
+}

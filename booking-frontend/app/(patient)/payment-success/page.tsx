@@ -51,7 +51,7 @@ export default function BookingSuccessPage() {
 
         {/* Footer */}
         <p className="text-xs text-gray-400 mt-8">
-          © 2024 3T Hospital - Trân trọng cảm ơn!
+          © 2026 3T Hospital - Trân trọng cảm ơn!
         </p>
       </div>
     </div>

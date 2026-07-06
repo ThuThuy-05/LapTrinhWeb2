@@ -198,6 +198,7 @@ export default function SchedulePage() {
       timeEnd: "",
       status: "AVAILABLE",
     });
+
     setErrors({
       doctorId: "",
       date: "",
@@ -205,10 +206,14 @@ export default function SchedulePage() {
       timeEnd: "",
       roomId: "",
     });
+
+    setSelectedSlots([]);
+
     setEditingId(null);
   };
 
   const handleOpenModal = (sch?: any) => {
+    setSelectedSlots([]);
     resetForm();
     if (sch) {
       setEditingId(sch.id);
@@ -336,8 +341,11 @@ export default function SchedulePage() {
       }
 
       await fetchAllData();
-      setIsModalOpen(false);
+
       resetForm();
+      setSelectedSlots([]);
+
+      setIsModalOpen(false);
     } catch (e: any) {
       console.error("Lỗi:", e);
       const message = e?.response?.data?.message || e?.message || "";
@@ -911,8 +919,9 @@ export default function SchedulePage() {
 
         {/* Add/Edit Modal */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden my-8">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            {" "}
+            <div className="bg-white w-full max-w-4xl rounded-2xl shadow-2xl max-h-[90vh] flex flex-col">
               {" "}
               <div className="bg-gradient-to-r from-[#2DD4BF] to-[#0EA5E9] px-6 py-4 flex justify-between items-center">
                 <h2 className="text-lg font-semibold text-white flex items-center gap-2">
@@ -929,7 +938,8 @@ export default function SchedulePage() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto flex-1">
+                {" "}
                 <div className="space-y-4">
                   {/* Bác sĩ */}
                   <div>

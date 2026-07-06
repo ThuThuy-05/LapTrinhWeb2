@@ -17,4 +17,11 @@ public interface SpecialtyRepository extends JpaRepository<Specialty, Long> {
 
     List<Specialty> findByNameContainingIgnoreCase(String keyword);
 
+    // Lấy chuyên khoa có bác sĩ
+    @Query("SELECT DISTINCT s FROM Specialty s JOIN s.doctors d")
+    List<Specialty> findSpecialtiesWithActiveDoctors();
+
+    // Lấy chuyên khoa có giá
+    @Query("SELECT s FROM Specialty s WHERE s.price IS NOT NULL AND s.price > 0")
+    List<Specialty> findSpecialtiesWithPrice();
 }

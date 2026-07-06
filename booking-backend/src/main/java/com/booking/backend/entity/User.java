@@ -218,7 +218,7 @@ public class User {
     // FULL NAME HELPER
     // =====================
     public String getFullName() {
-        return (lastName != null ? lastName : "") + " " +
-                (firstName != null ? firstName : "");
+        return (firstName != null ? firstName : "") + " " +
+                (lastName != null ? lastName : "");
     }
 }

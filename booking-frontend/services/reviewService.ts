@@ -23,26 +23,11 @@ export interface ReviewRequest {
 
 // Hàm lấy userId hiện tại
 export const getCurrentUserId = (): number | null => {
+  if (typeof window === "undefined") return null;
+
   const userId = localStorage.getItem("userId");
-  if (userId) {
-    return parseInt(userId);
-  }
 
-  const token = localStorage.getItem("token");
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const id = payload.userId || payload.sub || payload.id;
-      if (id) {
-        localStorage.setItem("userId", String(id));
-        return parseInt(id);
-      }
-    } catch (e) {
-      console.error("Lỗi parse token:", e);
-    }
-  }
-
-  return null;
+  return userId ? Number(userId) : null;
 };
 
 // Lấy danh sách đánh giá theo bác sĩ (BE đã lọc isHidden = false)

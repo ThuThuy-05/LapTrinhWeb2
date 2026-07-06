@@ -11,12 +11,7 @@ export type ChatResponse = {
   success: boolean;
   error?: string;
   sessionId?: string;
-
-  responseType?: string;
   quickReplies?: string[];
-  data?: any;
-  intent?: string;
-  confidence?: number;
 };
 
 export type ChatRequest = {
@@ -28,20 +23,16 @@ export type ChatRequest = {
 export type SessionResponse = {
   sessionId: string;
   message: string;
-};
-
-export type StatusResponse = {
-  status: string;
-  version: string;
-  timestamp: string;
+  success: boolean;
 };
 
 export type ResetResponse = {
   message: string;
+  success: boolean;
 };
 
 // =========================
-// CHAT SERVICE
+// CHAT SERVICE - KHỚP VỚI BE
 // =========================
 
 class ChatService {
@@ -51,16 +42,19 @@ class ChatService {
     this.sessionId = "";
   }
 
+  /**
+   * Khởi tạo session trong localStorage
+   */
   initSession() {
     if (typeof window === "undefined") return;
 
     const stored = localStorage.getItem("chatSessionId");
-
-    this.sessionId =
-      stored ||
-      `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-
-    localStorage.setItem("chatSessionId", this.sessionId);
+    if (stored) {
+      this.sessionId = stored;
+    } else {
+      this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem("chatSessionId", this.sessionId);
+    }
   }
 
   /**
@@ -71,16 +65,18 @@ class ChatService {
   }
 
   /**
-   * Tạo session mới - KHỚP VỚI API /api/chat/session
+   * Tạo session mới - POST /api/chat/session
+   * BE trả về: { sessionId, message, success }
    */
   async createSession(): Promise<SessionResponse> {
     try {
       const res = await api.post<SessionResponse>("/chat/session");
-      // Cập nhật sessionId mới
+
       if (res.data?.sessionId) {
         this.sessionId = res.data.sessionId;
         localStorage.setItem("chatSessionId", this.sessionId);
       }
+
       return res.data;
     } catch (error) {
       console.error("❌ Lỗi tạo session:", error);
@@ -89,8 +85,8 @@ class ChatService {
   }
 
   /**
-   * Gửi tin nhắn đến chatbot - KHỚP VỚI API /api/chat/send
-   * Backend trả về ChatResponse với message, sender, timestamp, success, error
+   * Gửi tin nhắn đến chatbot - POST /api/chat/send
+   * BE trả về: { message, sender, timestamp, success, error, quickReplies }
    */
   async sendMessage(message: string, userId?: number): Promise<ChatResponse> {
     const payload: ChatRequest = {
@@ -99,33 +95,121 @@ class ChatService {
       userId: userId || 0,
     };
 
-    const res = await api.post<ChatResponse>("/chat/send", payload);
+    try {
+      const res = await api.post<ChatResponse>("/chat/send", payload);
+      return res.data;
+    } catch (error: any) {
+      console.error("❌ Lỗi gửi tin nhắn:", error);
 
-    return res.data;
+      // Xử lý lỗi từ BE
+      if (error.response?.data) {
+        return {
+          success: false,
+          message: "",
+          sender: "BOT",
+          timestamp: new Date().toISOString(),
+          error:
+            error.response.data.message ||
+            error.response.data.error ||
+            "Lỗi từ server",
+        };
+      }
+
+      return {
+        success: false,
+        message: "",
+        sender: "BOT",
+        timestamp: new Date().toISOString(),
+        error: "Không thể kết nối đến server",
+      };
+    }
   }
 
   /**
-   * Reset conversation - KHỚP VỚI API /api/chat/reset
-   * Backend: POST /api/chat/reset?userId=xxx
+   * Reset conversation - POST /api/chat/reset
+   * BE: userId truyền qua query params
    */
   async resetConversation(userId?: number): Promise<ResetResponse> {
-    const res = await api.post<ResetResponse>(" /chat/reset", null, {
-      params: { userId: userId || 0 },
-    });
+    try {
+      // Nếu không có userId thì gửi 0
+      const params = new URLSearchParams();
+      if (userId) {
+        params.append("userId", userId.toString());
+      } else {
+        params.append("userId", "0");
+      }
 
-    this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const res = await api.post<ResetResponse>(
+        `/chat/reset?${params.toString()}`,
+      );
 
-    localStorage.setItem("chatSessionId", this.sessionId);
+      // Tạo sessionId mới
+      this.sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem("chatSessionId", this.sessionId);
 
-    return res.data;
+      return res.data;
+    } catch (error: any) {
+      console.error("❌ Lỗi reset:", error);
+      return {
+        success: false,
+        message: error.response?.data?.message || "Không thể reset",
+      };
+    }
   }
 
   /**
-   * Kiểm tra trạng thái chatbot - KHỚP VỚI API /api/chat/status
+   * Lấy lịch sử chat - GET /api/chat/history
    */
-  async getStatus(): Promise<StatusResponse> {
+  async getHistory(userId?: number): Promise<any> {
     try {
-      const res = await api.get<StatusResponse>("/chat/status");
+      const params = new URLSearchParams();
+      if (userId) {
+        params.append("userId", userId.toString());
+      } else {
+        params.append("userId", "0");
+      }
+
+      const res = await api.get(`/chat/history?${params.toString()}`);
+      return res.data;
+    } catch (error) {
+      console.error("❌ Lỗi lấy lịch sử:", error);
+      return {
+        success: false,
+        history: [],
+        count: 0,
+      };
+    }
+  }
+
+  /**
+   * Xóa lịch sử chat - DELETE /api/chat/history
+   */
+  async clearHistory(userId?: number): Promise<any> {
+    try {
+      const params = new URLSearchParams();
+      if (userId) {
+        params.append("userId", userId.toString());
+      } else {
+        params.append("userId", "0");
+      }
+
+      const res = await api.delete(`/chat/history?${params.toString()}`);
+      return res.data;
+    } catch (error) {
+      console.error("❌ Lỗi xóa lịch sử:", error);
+      return {
+        success: false,
+        message: "Không thể xóa lịch sử",
+      };
+    }
+  }
+
+  /**
+   * Kiểm tra trạng thái - GET /api/chat/status
+   */
+  async getStatus(): Promise<any> {
+    try {
+      const res = await api.get("/chat/status");
       return res.data;
     } catch (error) {
       console.error("❌ Lỗi kiểm tra status:", error);
@@ -134,26 +218,6 @@ class ChatService {
         version: "unknown",
         timestamp: new Date().toISOString(),
       };
-    }
-  }
-
-  /**
-   * Xử lý lỗi từ response
-   */
-  handleError(error: any): string {
-    if (error.response) {
-      // Server trả về lỗi
-      return (
-        error.response.data?.error ||
-        error.response.data?.message ||
-        "Lỗi từ server"
-      );
-    } else if (error.request) {
-      // Không nhận được response
-      return "Không thể kết nối đến server. Vui lòng kiểm tra kết nối!";
-    } else {
-      // Lỗi khác
-      return error.message || "Đã xảy ra lỗi!";
     }
   }
 }

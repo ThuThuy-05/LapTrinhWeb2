@@ -60,7 +60,7 @@ export default function AdminContactPage() {
       loadContacts();
     });
   }, []);
-  
+
   const handleSelect = async (id: number) => {
     try {
       const contact = await getContactById(id);
@@ -73,6 +73,35 @@ export default function AdminContactPage() {
     }
   };
 
+  useEffect(() => {
+    if (!selected) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const msgs = await getMessages(selected.id);
+
+        setMessages((prev) => {
+          // chỉ cập nhật khi có thay đổi
+          if (JSON.stringify(prev) !== JSON.stringify(msgs)) {
+            return msgs;
+          }
+          return prev;
+        });
+
+        // cập nhật lại trạng thái contact
+        const contact = await getContactById(selected.id);
+        setSelected(contact);
+
+        // cập nhật danh sách bên trái
+        loadContacts();
+      } catch (error) {
+        console.error(error);
+      }
+    }, 3000); // 3 giây
+
+    return () => clearInterval(interval);
+  }, [selected]);
+
   const handleReply = async () => {
     if (!selected) return;
     if (!reply.trim()) {
@@ -83,11 +112,14 @@ export default function AdminContactPage() {
     try {
       setLoading(true);
       await sendMessage(selected.id, "ADMIN", reply);
+
+      // lấy lại danh sách mới
       const msgs = await getMessages(selected.id);
       setMessages(msgs);
+
       await loadContacts();
+
       setReply("");
-      alert("Phản hồi thành công!");
     } catch (error) {
       console.error(error);
       alert("Phản hồi thất bại");

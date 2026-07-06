@@ -85,18 +85,21 @@ export default function Header() {
     fetchProfile();
   }, [router]);
 
-  // Load notifications when user is logged in
   useEffect(() => {
     const loadNotifications = async () => {
-      if (!user) return;
+      if (!user?.id) return;
+
+      console.log("user =", user);
+      console.log("user.id =", user.id);
 
       setNotificationLoading(true);
+
       try {
-        const userId = Number(localStorage.getItem("userId"));
-        if (userId) {
-          const data = await getNotifications(userId);
-          setNotifications(data);
-        }
+        const data = await getNotifications(user.id);
+
+        console.log("notifications =", data);
+
+        setNotifications(data);
       } catch (error) {
         console.error("Failed to load notifications:", error);
       } finally {
@@ -144,7 +147,7 @@ export default function Header() {
       localStorage.removeItem("userId");
       localStorage.removeItem("fullName");
       setUser(null);
-      router.push("/login");
+      router.push("/");
     }
   };
 
@@ -162,9 +165,11 @@ export default function Header() {
   };
 
   const handleMarkAllAsRead = async () => {
+    if (!user?.id) return;
+
     try {
-      const userId = Number(localStorage.getItem("userId"));
-      await markAllNotificationsAsRead(userId);
+      await markAllNotificationsAsRead(user.id);
+
       setNotifications((prev) =>
         prev.map((item) => ({ ...item, isRead: true })),
       );
@@ -407,10 +412,8 @@ export default function Header() {
 
                     <div className="text-left">
                       <p className="text-sm font-semibold text-white">
-                        {user?.lastName || ""}{" "}
-                        {user?.firstName ||
-                          user?.email?.split("@")[0] ||
-                          "User"}
+                        {user?.firstName || ""}{" "}
+                        {user?.lastName || user?.email?.split("@")[0] || "User"}
                       </p>
                       <p className="text-xs text-cyan-100">
                         {user?.role === "PATIENT"
@@ -433,8 +436,8 @@ export default function Header() {
                     <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl overflow-hidden z-50 animate-in slide-in-from-top-2 duration-200">
                       <div className="p-4 border-b bg-gradient-to-r from-blue-50 to-cyan-50">
                         <p className="font-semibold text-gray-800">
-                          {user?.lastName || ""}{" "}
-                          {user?.firstName ||
+                          {user?.firstName || ""}{" "}
+                          {user?.lastName ||
                             user?.email?.split("@")[0] ||
                             "User"}
                         </p>
@@ -478,22 +481,6 @@ export default function Header() {
                         </Link>
 
                         <div className="border-t my-2"></div>
-
-                        <Link
-                          href="/notifications"
-                          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-100 transition"
-                          onClick={() => setOpenDropdown(false)}
-                        >
-                          <Bell className="w-4 h-4 text-gray-600" />
-                          <span className="text-sm text-gray-700">
-                            Thông báo của tôi
-                          </span>
-                          {unreadCount > 0 && (
-                            <span className="ml-auto bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5">
-                              {unreadCount}
-                            </span>
-                          )}
-                        </Link>
 
                         <button
                           onClick={handleLogout}

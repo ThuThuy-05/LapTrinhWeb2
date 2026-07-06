@@ -29,6 +29,9 @@ export const CreateReviewModal = ({
   if (!open) return null;
 
   const handleSubmit = async () => {
+    console.log("doctorId =", doctorId);
+    console.log("rating =", rating);
+    console.log("comment =", comment);
     if (rating === 0) {
       alert("Vui lòng chọn số sao");
       return;

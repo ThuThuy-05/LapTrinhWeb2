@@ -69,7 +69,12 @@ export default function SpecialtyHome() {
         {/* Grid - hiển thị 6 chuyên khoa với màu sắc */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
           {displayedSpecialties.map((specialty, index) => (
-            <Link key={specialty.id} href="/specialties" className="group">
+            <Link
+              key={specialty.id}
+              href={`/doctors?specialtyId=${specialty.id}&specialtyName=${encodeURIComponent(specialty.name)}`}
+              className="group"
+            >
+              {" "}
               <div className="bg-white rounded-2xl p-5 text-center shadow-lg hover:shadow-xl transition-all duration-300 border border-slate-100 hover:border-teal-200 hover:-translate-y-1">
                 {/* Ảnh với gradient màu khác nhau */}
                 <div

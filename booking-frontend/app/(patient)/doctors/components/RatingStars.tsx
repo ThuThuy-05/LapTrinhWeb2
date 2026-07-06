@@ -1,4 +1,3 @@
-// components/patient/doctor/RatingStars.tsx
 
 import { Star, StarHalf } from "lucide-react";
 

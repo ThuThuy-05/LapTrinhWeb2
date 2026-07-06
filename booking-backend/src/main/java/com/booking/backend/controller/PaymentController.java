@@ -190,43 +190,6 @@ public class PaymentController {
                                 "http://localhost:3000/payment-failed");
         }
 
-        @PostMapping("/confirm-bank-transfer/{bookingId}")
-        public ResponseEntity<?> confirmBankTransfer(
-
-                        @PathVariable Long bookingId) {
-
-                Booking booking = bookingRepository
-                                .findById(bookingId)
-                                .orElseThrow();
-
-                // Cập nhật trạng thái booking
-                booking.setStatus(BookingStatus.CONFIRMED);
-                bookingRepository.save(booking);
-
-                // Cập nhật trạng thái lịch khám
-                Schedule schedule = booking.getSchedule();
-
-                if (schedule != null) {
-                        schedule.setStatus(ScheduleStatus.BOOKED);
-                        scheduleRepository.save(schedule);
-                }
-
-                // Gửi email xác nhận
-                emailService.sendBookingSuccessMail(
-                                booking.getUser().getEmail(),
-                                booking.getUser().getFullName(),
-                                booking.getSchedule().getDoctor().getUser().getFullName(),
-                                booking.getSchedule().getDoctor().getSpecialty().getName(),
-                                booking.getSchedule().getRoom().getName(),
-                                booking.getSchedule().getDate().toString(),
-                                booking.getSchedule().getTimeStart().toString(),
-                                booking.getId().toString());
-
-                return ResponseEntity.ok(
-                                Map.of(
-                                                "message", "Thanh toán thành công"));
-        }
-
         @PostMapping("/sepay-webhook")
         public ResponseEntity<?> sepayWebhook(@RequestBody Map<String, Object> body) {
 

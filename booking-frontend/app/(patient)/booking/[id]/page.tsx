@@ -138,11 +138,14 @@ export default function BookingPage() {
         });
       }
       setAvailableTabs(tabs);
-      setSelectedDate(tabs[0].dateStr);
+
+      if (!selectedDate) {
+        setSelectedDate(tabs[0].dateStr);
+      }
     };
 
     generateNext7Days();
-  }, []);
+  }, [selectedDate]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -208,6 +211,23 @@ export default function BookingPage() {
 
         const scheduleData = await getSchedulesByDoctorId(doctorData.id);
         setSchedules(scheduleData || []);
+
+        const selected = sessionStorage.getItem("selected_schedule");
+
+        if (selected) {
+          const schedule = JSON.parse(selected);
+
+          const found = scheduleData.find(
+            (x: Schedule) => x.id === schedule.id,
+          );
+
+          if (found) {
+            setSelectedSchedule(found);
+            setSelectedDate(found.date);
+          }
+
+          sessionStorage.removeItem("selected_schedule");
+        }
 
         const saved = sessionStorage.getItem(STORAGE_KEY);
 
@@ -851,7 +871,7 @@ export default function BookingPage() {
                   <div className="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center">
                     3
                   </div>
-                  Thông tin khách hàng
+                  Thông tin bệnh nhân
                 </h2>
               </div>
               <div className="p-6">

@@ -10,6 +10,7 @@ type Message = {
   content: string;
   timestamp?: string;
   isError?: boolean;
+  quickReplies?: string[];
 };
 
 const ChatBot = () => {
@@ -19,9 +20,11 @@ const ChatBot = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isTyping, setIsTyping] = useState(false);
+  const [quickReplies, setQuickReplies] = useState<string[]>([]);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
 
   // Auto scroll
   useEffect(() => {
@@ -35,9 +38,25 @@ const ChatBot = () => {
     }
   }, [isOpen]);
 
+  // =========================
+  // KHỞI TẠO SESSION - KHỚP BE
+  // =========================
   useEffect(() => {
-    chatService.initSession();
+    const initSession = async () => {
+      try {
+        // Bước 1: Khởi tạo sessionId trong localStorage
+        chatService.initSession();
+
+        // Bước 2: Tạo session trên server (POST /api/chat/session)
+        const session = await chatService.createSession();
+        console.log("✅ Session created:", session.sessionId);
+      } catch (error) {
+        console.error("❌ Không thể khởi tạo session:", error);
+      }
+    };
+    initSession();
   }, []);
+
   // Tin nhắn chào mừng
   useEffect(() => {
     if (messages.length === 0) {
@@ -46,7 +65,7 @@ const ChatBot = () => {
           id: "welcome",
           sender: "BOT",
           content:
-            "👋 Xin chào! Tôi là trợ lý ảo của bệnh viện.\n\nTôi có thể giúp bạn:\n• Tìm bác sĩ theo chuyên khoa\n• Xem lịch làm việc\n• Đặt lịch khám\n• Kiểm tra lịch đã đặt\n• Xem giá dịch vụ\n\n💡 Hãy hỏi tôi bất cứ điều gì!",
+            "👋 Xin chào! Tôi là trợ lý ảo của bệnh viện 3T Hospital.\n\nTôi có thể giúp bạn:\n• 🔍 Tìm bác sĩ theo tên\n• 📅 Xem lịch trống của bác sĩ\n• 📋 Xem lịch làm việc\n• 🏥 Xem danh sách chuyên khoa\n• 📍 Xem chi nhánh bệnh viện\n• 💰 Xem bảng giá dịch vụ\n\n💡 Hãy hỏi tôi bất cứ điều gì!",
           timestamp: new Date().toISOString(),
         },
       ]);
@@ -58,6 +77,23 @@ const ChatBot = () => {
     if (!isOpen) setError(null);
   };
 
+  // Lấy userId từ localStorage
+  const getUserId = (): number | undefined => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return user.id || undefined;
+      }
+      return undefined;
+    } catch (error) {
+      return undefined;
+    }
+  };
+
+  // =========================
+  // GỬI TIN NHẮN - KHỚP BE
+  // =========================
   const handleSendMessage = async () => {
     const message = inputMessage.trim();
     if (!message || isLoading) return;
@@ -74,12 +110,19 @@ const ChatBot = () => {
     setIsLoading(true);
     setIsTyping(true);
     setError(null);
+    setQuickReplies([]);
 
     try {
-      // Gọi API - Backend trả về ChatResponse
-      const response: ChatResponse = await chatService.sendMessage(message);
+      // Lấy userId
+      const userId = getUserId();
 
-      // Kiểm tra response từ backend
+      // Gọi API sendMessage - POST /api/chat/send
+      const response: ChatResponse = await chatService.sendMessage(
+        message,
+        userId,
+      );
+
+      // Xử lý response từ BE
       if (response.success) {
         // Thêm tin nhắn bot thành công
         const botMessage: Message = {
@@ -87,12 +130,19 @@ const ChatBot = () => {
           sender: "BOT",
           content: response.message,
           timestamp: response.timestamp || new Date().toISOString(),
+          quickReplies: response.quickReplies || [],
         };
         setMessages((prev) => [...prev, botMessage]);
+
+        // Lưu quick replies để hiển thị
+        if (response.quickReplies && response.quickReplies.length > 0) {
+          setQuickReplies(response.quickReplies);
+        }
       } else {
-        // Backend trả về lỗi
+        // BE trả về lỗi
         const errorMsg = response.error || "Có lỗi xảy ra!";
         setError(errorMsg);
+
         const botMessage: Message = {
           id: `error_${Date.now()}`,
           sender: "BOT",
@@ -103,9 +153,9 @@ const ChatBot = () => {
         setMessages((prev) => [...prev, botMessage]);
       }
     } catch (err: any) {
-      console.error("Lỗi gửi tin nhắn:", err);
+      console.error("❌ Lỗi gửi tin nhắn:", err);
 
-      // Xử lý lỗi từ service
+      // Xử lý lỗi từ network
       let errorMessage = "Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau!";
       if (err.response?.data?.message) {
         errorMessage = err.response.data.message;
@@ -114,6 +164,7 @@ const ChatBot = () => {
       }
 
       setError(errorMessage);
+
       const botMessage: Message = {
         id: `error_${Date.now()}`,
         sender: "BOT",
@@ -128,6 +179,16 @@ const ChatBot = () => {
     }
   };
 
+  // Xử lý click quick reply
+  const handleQuickReply = (reply: string) => {
+    setInputMessage(reply);
+    setQuickReplies([]);
+    // Tự động gửi sau 100ms
+    setTimeout(() => {
+      handleSendMessage();
+    }, 100);
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
@@ -135,42 +196,66 @@ const ChatBot = () => {
     }
   };
 
+  // =========================
+  // RESET - KHỚP BE
+  // =========================
   const handleReset = async () => {
     try {
-      // Gọi API reset - Backend: POST /api/chat/reset
-      const result = await chatService.resetConversation();
-      setMessages([
-        {
-          id: "reset",
-          sender: "BOT",
-          content: "🔄 Đã reset conversation. Hãy hỏi tôi bất cứ điều gì!",
-          timestamp: new Date().toISOString(),
-        },
-      ]);
-      setError(null);
+      const userId = getUserId();
+
+      // Gọi API reset - POST /api/chat/reset?userId=xxx
+      const result = await chatService.resetConversation(userId);
+
+      if (result.success) {
+        setMessages([
+          {
+            id: "reset",
+            sender: "BOT",
+            content: "🔄 Đã reset conversation. Hãy hỏi tôi bất cứ điều gì!",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+        setError(null);
+        setQuickReplies([]);
+      } else {
+        setError(result.message || "Không thể reset");
+      }
     } catch (err: any) {
       setError(err.message || "Không thể reset. Vui lòng thử lại!");
     }
   };
 
-  const router = useRouter();
-
+  // Render message với link đặt lịch
   const renderMessage = (text: string) => {
-    const urlRegex = /(\/booking\/\d+)/g;
+    // Xử lý các link đặt lịch
+    const bookingRegex = /\/booking\/(\d+)/g;
+    const parts = text.split(bookingRegex);
 
-    return text.split(urlRegex).map((part, index) => {
-      if (part.match(urlRegex)) {
+    return parts.map((part, index) => {
+      // Nếu là số (doctorId) thì tạo link
+      if (index % 2 === 1 && /^\d+$/.test(part)) {
         return (
           <span
             key={index}
-            onClick={() => router.push(part)}
-            className="text-blue-500 underline cursor-pointer"
+            onClick={() => router.push(`/booking/${part}`)}
+            className="text-blue-500 underline cursor-pointer hover:text-blue-700 font-medium"
           >
             👉 Đặt lịch ngay
           </span>
         );
       }
-
+      // Nếu là URL booking
+      if (part.includes("/booking/")) {
+        return (
+          <span
+            key={index}
+            onClick={() => router.push(part)}
+            className="text-blue-500 underline cursor-pointer hover:text-blue-700 font-medium"
+          >
+            👉 Đặt lịch ngay
+          </span>
+        );
+      }
       return <span key={index}>{part}</span>;
     });
   };
@@ -210,7 +295,7 @@ const ChatBot = () => {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 w-[400px] h-[600px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50 border border-gray-200">
+    <div className="fixed bottom-6 right-6 w-[420px] h-[620px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden z-50 border border-gray-200">
       {/* Header */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-5 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-2">
@@ -230,7 +315,7 @@ const ChatBot = () => {
             </svg>
           </div>
           <div>
-            <span className="font-semibold">Trợ lý ảo</span>
+            <span className="font-semibold">Trợ lý ảo 3T</span>
             <div className="text-xs text-blue-200">Đang hoạt động</div>
           </div>
         </div>
@@ -283,7 +368,7 @@ const ChatBot = () => {
             className={`flex ${msg.sender === "USER" ? "justify-end" : "justify-start"} mb-3`}
           >
             <div
-              className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+              className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
                 msg.sender === "USER"
                   ? "bg-blue-600 text-white"
                   : msg.isError
@@ -291,7 +376,7 @@ const ChatBot = () => {
                     : "bg-white text-gray-800 shadow-sm border border-gray-100"
               }`}
             >
-              <div className="text-sm whitespace-pre-wrap break-words">
+              <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                 {renderMessage(msg.content)}
               </div>
               <div
@@ -304,6 +389,21 @@ const ChatBot = () => {
             </div>
           </div>
         ))}
+
+        {/* Quick Replies - Từ BE trả về */}
+        {quickReplies.length > 0 && !isLoading && (
+          <div className="flex flex-wrap gap-2 justify-start mb-3">
+            {quickReplies.map((reply, index) => (
+              <button
+                key={index}
+                onClick={() => handleQuickReply(reply)}
+                className="px-3 py-1.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-full text-sm hover:bg-blue-100 transition-colors"
+              >
+                {reply}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Typing indicator */}
         {isTyping && (
@@ -332,7 +432,7 @@ const ChatBot = () => {
 
       {/* Error message */}
       {error && (
-        <div className="px-4 py-2 bg-red-50 border-t border-red-200">
+        <div className="px-4 py-2 bg-red-50 border-t border-red-200 flex-shrink-0">
           <div className="text-sm text-red-600 flex items-center gap-2">
             <span>⚠️</span>
             <span>{error}</span>
@@ -354,7 +454,7 @@ const ChatBot = () => {
               ref={inputRef}
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={handleKeyPress}
               placeholder="Nhập tin nhắn..."
               className="w-full px-4 py-2 pr-12 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 resize-none text-sm"
               rows={1}
@@ -365,7 +465,7 @@ const ChatBot = () => {
           <button
             onClick={handleSendMessage}
             disabled={!inputMessage.trim() || isLoading}
-            className={`px-4 py-2 rounded-xl transition-all ${
+            className={`px-4 py-2 rounded-xl transition-all flex-shrink-0 ${
               inputMessage.trim() && !isLoading
                 ? "bg-blue-600 hover:bg-blue-700 text-white shadow-sm"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"

@@ -117,12 +117,12 @@ export default function ContactPage() {
     {
       icon: "✉️",
       title: "Email",
-      content: "support@medbooking.com",
+      content: "support@3THospital.com",
     },
     {
       icon: "⏰",
       title: "Giờ làm việc",
-      content: "Thứ 2 - Thứ 7: 08:00 - 20:00",
+      content: "Thứ 2 - Thứ 7: 07:30 - 18:00",
     },
   ];
 
@@ -279,7 +279,7 @@ export default function ContactPage() {
                       type="email"
                       value={form.email}
                       onChange={handleChange}
-                      placeholder="you@example.com"
+                      placeholder="you@gmail.com"
                       className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-gray-50/50"
                       style={{ fontFamily: "'Times New Roman', Times, serif" }}
                     />

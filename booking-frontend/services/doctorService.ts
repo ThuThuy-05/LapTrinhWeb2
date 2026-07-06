@@ -216,3 +216,11 @@ export const updateMyDoctorProfile = async (data: any) => {
 
   return response.data;
 };
+
+export const getDoctorsAvailableByDate = async (date: string) => {
+    const res = await api.get("/doctors/available", {
+        params: { date }
+    });
+
+    return res.data;
+};

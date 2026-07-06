@@ -189,10 +189,10 @@ export default function RegisterPage() {
                 <User className="w-8 h-8 text-white" />
               </div>
               <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-                Create Account
+                Tạo tài khoản
               </h1>
               <p className="text-gray-500 mt-2">
-                Join us and start your journey
+                Tạo tài khoản để tiếp tục sử dụng hệ thống
               </p>
             </div>
 
@@ -205,7 +205,7 @@ export default function RegisterPage() {
                   </div>
                   <input
                     name="firstName"
-                    placeholder="First Name"
+                    placeholder="Nhập họ"
                     value={form.firstName}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -228,7 +228,7 @@ export default function RegisterPage() {
                   </div>
                   <input
                     name="lastName"
-                    placeholder="Last Name"
+                    placeholder="Nhập tên"
                     value={form.lastName}
                     onChange={handleChange}
                     onBlur={handleBlur}
@@ -255,7 +255,7 @@ export default function RegisterPage() {
                 <input
                   name="email"
                   type="email"
-                  placeholder="Email address"
+                  placeholder="Email"
                   value={form.email}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -281,7 +281,7 @@ export default function RegisterPage() {
                 <input
                   name="phone"
                   type="tel"
-                  placeholder="Phone number"
+                  placeholder="Số điện thoại"
                   value={form.phone}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -307,7 +307,7 @@ export default function RegisterPage() {
                 <input
                   name="address"
                   type="text"
-                  placeholder="Your address"
+                  placeholder="Địa chỉ"
                   value={form.address}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -333,7 +333,7 @@ export default function RegisterPage() {
                 <input
                   name="dateOfBirth"
                   type="date"
-                  placeholder="Date of Birth"
+                  placeholder="Ngày sinh"
                   value={form.dateOfBirth}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -363,9 +363,9 @@ export default function RegisterPage() {
                   onBlur={handleBlur}
                   className="w-full pl-9 pr-3 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none cursor-pointer"
                 >
-                  <option value="MALE">Male</option>
-                  <option value="FEMALE">Female</option>
-                  <option value="OTHER">Other</option>
+                  <option value="MALE">Nam</option>
+                  <option value="FEMALE">Nữ</option>
+                  <option value="OTHER">Khác</option>
                 </select>
               </div>
 
@@ -377,7 +377,7 @@ export default function RegisterPage() {
                 <input
                   name="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="Mật khẩu"
                   value={form.password}
                   onChange={handleChange}
                   onBlur={handleBlur}
@@ -433,7 +433,7 @@ export default function RegisterPage() {
                     ></div>
                   </div>
                   <p className="text-xs text-gray-500 mt-1">
-                    Use 6+ characters with uppercase & number
+                    Tối thiểu 6 ký tự, gồm chữ hoa và số{" "}
                   </p>
                 </div>
               )}
@@ -448,10 +448,10 @@ export default function RegisterPage() {
                   {isLoading ? (
                     <div className="flex items-center justify-center gap-2">
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Creating account...
+                      Đang tạo tài khoản...
                     </div>
                   ) : (
-                    "Create Account"
+                    "Tạo Tài Khoản"
                   )}
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity"></div>
@@ -470,28 +470,16 @@ export default function RegisterPage() {
 
             {/* Login link */}
             <p className="text-center text-sm text-gray-600">
-              Already have an account?{" "}
+              Đã có tài khoản?{" "}
               <a
                 href="/login"
                 className="font-semibold text-blue-600 hover:text-blue-700 hover:underline transition-colors"
               >
-                Sign in
+                Đăng nhập
               </a>
             </p>
           </div>
         </div>
-
-        {/* Footer note */}
-        <p className="text-center text-xs text-gray-500 mt-6">
-          By creating an account, you agree to our{" "}
-          <a href="#" className="text-blue-600 hover:underline">
-            Terms
-          </a>{" "}
-          and{" "}
-          <a href="#" className="text-blue-600 hover:underline">
-            Privacy Policy
-          </a>
-        </p>
       </div>
     </div>
   );

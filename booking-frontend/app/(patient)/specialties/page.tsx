@@ -137,7 +137,7 @@ export default function SpecialtyPage() {
                   placeholder="Tìm nhanh tên chuyên khoa..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/10 backdrop-blur-md text-white text-xs rounded-xl border border-white/10 focus:border-blue-500 focus:bg-white focus:text-slate-900 focus:outline-none focus:ring-4 focus:ring-blue-500/10 transition-all duration-200 shadow-inner placeholder:text-slate-400 font-['Times_New_Roman',serif]"
+                  className="w-full pl-10 pr-4 py-3 bg-white text-slate-800 text-sm rounded-xl border border-gray-300 shadow-lg focus:border-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-300 transition-all duration-200 placeholder:text-gray-500"
                 />
               </div>
             </div>

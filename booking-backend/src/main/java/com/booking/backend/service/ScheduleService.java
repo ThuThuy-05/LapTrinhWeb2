@@ -27,6 +27,7 @@
 package com.booking.backend.service;
 
 import com.booking.backend.dto.ScheduleRequest;
+import com.booking.backend.entity.Doctor;
 import com.booking.backend.entity.Schedule;
 import com.booking.backend.enums.ScheduleStatus;
 import java.time.LocalDate;
@@ -51,4 +52,6 @@ public interface ScheduleService {
     void deleteSchedule(Long id);
 
     List<Schedule> getSchedulesByDoctor(Long doctorId);
+
+    List<Doctor> getDoctorsAvailableByDate(LocalDate date);
 }

@@ -36,10 +36,12 @@ import {
   Review,
   getCurrentUserId,
 } from "@/services/reviewService";
-import { CreateReviewModal } from "@/components/patient/doctor/CreateReviewModal";
-import { ReviewCard } from "@/components/patient/doctor/ReviewCard";
-import { RatingStars } from "@/components/patient/doctor/RatingStars";
 
+import { CreateReviewModal } from "../components/CreateReviewModal";
+import { RatingStars } from "../components/RatingStars";
+import DoctorReviews from "../components/DoctorReviews";
+import DoctorSidebar from "../components/DoctorSidebar";
+import DoctorSchedule from "../components/DoctorSchedule";
 const InfoCard = ({
   icon: Icon,
   title,
@@ -59,32 +61,6 @@ const InfoCard = ({
       </div>
     </div>
     <div className="p-6">{children}</div>
-  </div>
-);
-
-const InfoRow = ({
-  icon: Icon,
-  label,
-  value,
-  highlight = false,
-}: {
-  icon: any;
-  label: string;
-  value: string;
-  highlight?: boolean;
-}) => (
-  <div className="flex items-start gap-3 py-3 border-b border-gray-100 last:border-0 group hover:bg-gray-50/50 transition-colors -mx-2 px-2 rounded-lg">
-    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
-      <Icon size={16} className="text-blue-600" />
-    </div>
-    <div className="flex-1">
-      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p
-        className={`text-sm font-medium ${highlight ? "text-blue-600" : "text-gray-700"}`}
-      >
-        {value}
-      </p>
-    </div>
   </div>
 );
 
@@ -138,7 +114,10 @@ export default function DoctorDetailPage() {
   const [isSaved, setIsSaved] = useState(false);
   const [hiddenCount, setHiddenCount] = useState(0); // Số lượng review bị ẩn
 
-  const currentUserId = getCurrentUserId() ?? undefined;
+  const [currentUserId] = useState<number | undefined>(() => {
+    if (typeof window === "undefined") return undefined;
+    return getCurrentUserId() ?? undefined;
+  });
 
   const loadData = async () => {
     setLoading(true);
@@ -172,11 +151,6 @@ export default function DoctorDetailPage() {
     if (!doctorId) return;
     loadData();
   }, [doctorId]);
-
-  // Hiển thị review dựa trên trạng thái showAllReviews
-  const displayedReviews = showAllReviews
-    ? visibleReviews
-    : visibleReviews.slice(0, 3);
 
   if (loading) {
     return (
@@ -311,6 +285,10 @@ export default function DoctorDetailPage() {
               <StatBadge value={avgRating.toFixed(1)} label="Sao trung bình" />
             </div>
 
+            <InfoCard icon={Clock} title="Lịch làm việc">
+              <DoctorSchedule doctorId={doctor.id} />
+            </InfoCard>
+
             <InfoCard icon={UserCircle} title="Giới thiệu">
               <p className="text-gray-600 leading-relaxed">
                 {doctor.description ||
@@ -318,167 +296,21 @@ export default function DoctorDetailPage() {
               </p>
             </InfoCard>
 
-            <InfoCard icon={Stethoscope} title="Chuyên khoa & Kỹ thuật">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-900 mb-2">
-                    Chuyên khoa chính
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    <SpecialtyTag
-                      name={doctor.specialty?.name || "Chuyên khoa"}
-                    />
-                  </div>
-                </div>
-              </div>
-            </InfoCard>
-
             {/* Đánh giá */}
             <InfoCard icon={MessageCircle} title="Đánh giá từ bệnh nhân">
-              {visibleReviews.length === 0 ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <MessageCircle size={24} className="text-gray-400" />
-                  </div>
-                  <p className="text-gray-500 font-medium">
-                    Chưa có đánh giá nào
-                  </p>
-                  <p className="text-gray-400 text-sm mt-1">
-                    Hãy là người đầu tiên chia sẻ trải nghiệm của bạn
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {displayedReviews.map((review) => (
-                    <ReviewCard
-                      key={review.id}
-                      review={review}
-                      currentUserId={currentUserId}
-                      onUpdate={loadData}
-                    />
-                  ))}
-
-                  {/* Hiển thị thông báo nếu có review bị ẩn */}
-                  {hiddenCount > 0 && (
-                    <div className="flex items-center justify-center gap-2 py-2 text-xs text-gray-400 border-t border-gray-100 mt-2">
-                      <EyeOff size={12} />
-                      <span>
-                        {hiddenCount} đánh giá đã bị ẩn bởi quản trị viên
-                      </span>
-                    </div>
-                  )}
-
-                  {visibleReviews.length > 3 && (
-                    <button
-                      onClick={() => setShowAllReviews(!showAllReviews)}
-                      className="w-full text-center text-sm text-blue-600 hover:text-blue-700 font-medium py-3 border-t border-gray-100 mt-2 flex items-center justify-center gap-1"
-                    >
-                      {showAllReviews
-                        ? "Thu gọn"
-                        : `Xem tất cả ${visibleReviews.length} đánh giá`}
-                      <ChevronRight
-                        size={14}
-                        className={showAllReviews ? "rotate-90" : ""}
-                      />
-                    </button>
-                  )}
-                </div>
-              )}
+              <DoctorReviews
+                visibleReviews={visibleReviews}
+                hiddenCount={hiddenCount}
+                currentUserId={currentUserId}
+                showAllReviews={showAllReviews}
+                setShowAllReviews={setShowAllReviews}
+                loadData={loadData}
+              />
             </InfoCard>
           </div>
 
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            <InfoCard icon={GraduationCap} title="Thông tin cơ bản">
-              <InfoRow
-                icon={GraduationCap}
-                label="Học vị"
-                value={doctor.degree?.split(",")[0] || "Bác sĩ Chuyên khoa"}
-              />
-              <InfoRow
-                icon={Briefcase}
-                label="Kinh nghiệm"
-                value={`${doctor.experience} năm`}
-              />
-              <InfoRow
-                icon={Award}
-                label="Chuyên khoa"
-                value={doctor.specialty?.name || "Đang cập nhật"}
-                highlight
-              />
-            </InfoCard>
-
-            <InfoCard icon={Hospital} title="Nơi làm việc">
-              <div className="space-y-4">
-                {/* Phần Chi nhánh - Hiển thị tên cơ sở */}
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 p-2 bg-blue-50 rounded-lg text-blue-600">
-                    <MapPin size={18} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-                      Cơ sở y tế
-                    </p>
-                    <p className="text-sm font-semibold text-slate-800 leading-tight">
-                      {doctor.branch?.name || "Đang cập nhật"}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Phần Địa chỉ - Hiển thị ngay dưới tên chi nhánh */}
-                {doctor.branch?.address && (
-                  <div className="flex items-start gap-3 pl-2 border-l-2 border-slate-100 ml-[10px]">
-                    <p className="text-sm text-slate-500 leading-relaxed italic">
-                      {doctor.branch.address}
-                    </p>
-                  </div>
-                )}
-
-                {/* Phần SĐT - Hiển thị tách biệt hoặc nhấn mạnh */}
-                {doctor.branch?.phone && (
-                  <div className="flex items-center gap-3 pt-3 border-t border-slate-50">
-                    <div className="text-slate-400">
-                      <Phone size={16} />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[11px] uppercase tracking-wider text-slate-400 font-bold">
-                        SĐT liên hệ
-                      </p>
-                      <a
-                        href={`tel:${doctor.branch.phone}`}
-                        className="text-sm font-medium text-blue-600 hover:underline"
-                      >
-                        {doctor.branch.phone}
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </InfoCard>
-
-            <InfoCard icon={Clock} title="Lịch làm việc">
-              <div className="space-y-3">
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Thứ 2 - Thứ 6</span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    07:30 - 17:00
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                  <span className="text-sm text-gray-600">Thứ 7</span>
-                  <span className="text-sm font-semibold text-gray-900">
-                    07:30 - 12:00
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-sm text-gray-600">Chủ Nhật</span>
-                  <span className="text-sm font-semibold text-red-500 bg-red-50 px-2 py-0.5 rounded-full">
-                    Nghỉ
-                  </span>
-                </div>
-              </div>
-            </InfoCard>
-          </div>
+          {/* Right Column */}
+          <DoctorSidebar doctor={doctor} />
         </div>
       </div>
 

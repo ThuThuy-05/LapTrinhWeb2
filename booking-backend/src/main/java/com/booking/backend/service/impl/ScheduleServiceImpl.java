@@ -332,4 +332,17 @@ public class ScheduleServiceImpl implements ScheduleService {
 
         return scheduleRepository.findByDoctor_Id(doctor.getId());
     }
+
+    @Override
+    public List<Doctor> getDoctorsAvailableByDate(LocalDate date) {
+
+        List<Schedule> schedules = scheduleRepository.findByDateAndStatus(
+                date,
+                ScheduleStatus.AVAILABLE);
+                
+        return schedules.stream()
+                .map(Schedule::getDoctor)
+                .distinct()
+                .toList();
+    }
 }

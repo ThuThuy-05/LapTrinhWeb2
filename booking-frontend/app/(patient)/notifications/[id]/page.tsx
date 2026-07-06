@@ -70,23 +70,18 @@ export default function NotificationsPage() {
   // Hàm load notifications
   const loadNotifications = useCallback(
     async (showRefreshIndicator = false) => {
-      const userId = Number(localStorage.getItem("userId"));
-      if (!userId) return;
+      if (!user?.id) return;
 
       try {
         if (showRefreshIndicator) setRefreshing(true);
-        const data = await getNotifications(userId);
 
-        // Kiểm tra xem có thông báo mới không
+        const data = await getNotifications(user.id);
+
         const oldIds = new Set(notifications.map((n) => n.id));
         const newNotifications = data.filter((n) => !oldIds.has(n.id));
 
         if (newNotifications.length > 0) {
           console.log("Có thông báo mới:", newNotifications.length);
-
-          // Phát âm thanh nếu muốn
-          // const audio = new Audio('/notification.mp3');
-          // audio.play().catch(e => console.log('Audio play failed:', e));
         }
 
         setNotifications(data);
@@ -96,12 +91,12 @@ export default function NotificationsPage() {
         if (showRefreshIndicator) setRefreshing(false);
       }
     },
-    [notifications],
+    [user, notifications],
   );
 
   // Polling: tự động refresh mỗi 5 giây
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     let isMounted = true;
 
